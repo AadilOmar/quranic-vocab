@@ -4,7 +4,6 @@ import { use, useState } from "react";
 import Link from "next/link";
 import { useLists } from "@/hooks/useLists";
 import FlashCard from "@/components/FlashCard";
-import { getAyahByWordId } from "@/data/index";
 
 export default function FlashCardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -31,23 +30,16 @@ export default function FlashCardPage({ params }: { params: Promise<{ id: string
     );
   }
 
-  const currentItem = list.items[index];
-  const sourceAyah = getAyahByWordId(currentItem.sourceWordId);
-
   return (
     <div className="max-w-xl mx-auto px-4 py-10">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <Link href="/lists" className="text-sm text-stone-400 hover:text-stone-600">
-          ← Lists
-        </Link>
+        <Link href="/lists" className="text-sm text-stone-400 hover:text-stone-600">← Lists</Link>
         <h1 className="text-base font-semibold text-stone-700">{list.name}</h1>
-        <div className="w-12" /> {/* spacer */}
+        <div className="w-12" />
       </div>
 
       <FlashCard
-        item={currentItem}
-        sourceAyah={sourceAyah}
+        item={list.items[index]}
         index={index}
         total={list.items.length}
         onNext={() => setIndex((i) => Math.min(i + 1, list.items.length - 1))}

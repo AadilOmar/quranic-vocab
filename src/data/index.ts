@@ -1,11 +1,9 @@
-import { fatiha } from "./fatiha";
-import { Ayah } from "@/types";
-
-const ALL_SURAHS = [fatiha];
-
-export function getAyahByWordId(sourceWordId: string): Ayah | null {
-  // sourceWordId format: "surahId:ayahId:position"
-  const [surahId, ayahId] = sourceWordId.split(":").map(Number);
-  const surah = ALL_SURAHS.find((s) => s.id === surahId);
-  return surah?.ayahs.find((a) => a.id === ayahId) ?? null;
+/**
+ * Parses a sourceWordId ("surahId:ayahId:position") and returns
+ * the surah and ayah numbers for display purposes.
+ */
+export function parseSourceWordId(sourceWordId: string): { surahId: number; ayahId: number } | null {
+  const parts = sourceWordId.split(":").map(Number);
+  if (parts.length < 2 || isNaN(parts[0]) || isNaN(parts[1])) return null;
+  return { surahId: parts[0], ayahId: parts[1] };
 }

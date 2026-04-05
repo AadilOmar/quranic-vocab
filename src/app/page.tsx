@@ -1,24 +1,17 @@
 import Link from "next/link";
-import { fatiha } from "@/data/fatiha";
+import { fetchChapters } from "@/lib/quran";
 
-const surahs = [fatiha];
+export default async function Home() {
+  const surahs = await fetchChapters();
 
-export default function Home() {
   return (
     <div className="max-w-xl mx-auto px-4 py-10">
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-stone-800 mb-1">
-            Quran Vocabulary
-          </h1>
-          <p className="text-sm text-stone-400">
-            Tap any word to learn its meaning, root, and more.
-          </p>
+          <h1 className="text-2xl font-semibold text-stone-800 mb-1">Quran Vocabulary</h1>
+          <p className="text-sm text-stone-400">Tap any word to learn its meaning, root, and more.</p>
         </div>
-        <Link
-          href="/lists"
-          className="text-sm text-stone-400 hover:text-amber-600 transition-colors mt-1"
-        >
+        <Link href="/lists" className="text-sm text-stone-400 hover:text-amber-600 transition-colors mt-1">
           My Lists →
         </Link>
       </div>
@@ -31,7 +24,7 @@ export default function Home() {
             className="flex items-center justify-between p-4 bg-white rounded-xl border border-stone-100 shadow-sm hover:shadow-md hover:border-amber-200 transition-all"
           >
             <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-9 h-9 rounded-full bg-amber-50 text-amber-700 text-sm font-semibold border border-amber-200">
+              <span className="flex items-center justify-center w-9 h-9 rounded-full bg-amber-50 text-amber-700 text-sm font-semibold border border-amber-200 shrink-0">
                 {surah.id}
               </span>
               <div>
@@ -41,9 +34,7 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <span className="font-arabic text-2xl text-stone-600">
-              {surah.arabicName}
-            </span>
+            <span className="font-arabic text-2xl text-stone-600">{surah.arabicName}</span>
           </Link>
         ))}
       </div>

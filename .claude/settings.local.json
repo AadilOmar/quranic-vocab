@@ -5,7 +5,18 @@
       "Bash(npm run:*)",
       "Bash(npm install:*)",
       "Bash(npx next:*)",
-      "Bash(gh auth:*)"
+      "Bash(gh auth:*)",
+      "Bash(curl -s \"https://api.quran.com/api/v4/chapters?language=en\")",
+      "Bash(node -e \"const d=require\\(''''fs''''\\).readFileSync\\(''''/dev/stdin'''',''''utf8''''\\); const j=JSON.parse\\(d\\); console.log\\(JSON.stringify\\(j.chapters[0], null, 2\\)\\)\")",
+      "Bash(curl:*)",
+      "Bash(npm info:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:corpus.quran.com)",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); print\\(type\\(data\\)\\); print\\(len\\(data\\)\\); print\\(json.dumps\\(data[0], ensure_ascii=False, indent=2\\)\\)\")",
+      "WebFetch(domain:quranmorphology.com)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d, ensure_ascii=False, indent=2\\)\\)\")",
+      "Bash(node scripts/process-morphology.mjs)"
     ]
   }
 }
