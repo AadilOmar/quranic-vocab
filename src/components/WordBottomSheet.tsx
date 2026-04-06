@@ -9,7 +9,7 @@ type Props = {
   onClose: () => void;
   lists: SavedList[];
   createList: (name: string) => SavedList;
-  addWordToList: (listId: string, item: Omit<ListItem, "id" | "addedAt">) => void;
+  addWordToList: (listId: string, item: Omit<ListItem, "id" | "addedAt" | "status">) => void;
   isWordSaved: (lemma: string) => boolean;
 };
 

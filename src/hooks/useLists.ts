@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 
+export type WordStatus = "new" | "learning" | "known";
+
 export type ListItem = {
   id: string;
   lemma: string;
@@ -10,6 +12,7 @@ export type ListItem = {
   arabic: string;
   sourceWordId: string;
   addedAt: string;
+  status: WordStatus;
 };
 
 export type SavedList = {
@@ -25,7 +28,16 @@ function loadLists(): SavedList[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const lists: SavedList[] = JSON.parse(raw);
+    // Migrate old items that lack a status field
+    return lists.map((list) => ({
+      ...list,
+      items: list.items.map((item) => ({
+        ...item,
+        status: item.status ?? "new",
+      })),
+    }));
   } catch {
     return [];
   }
@@ -57,7 +69,7 @@ export function useLists() {
     return newList;
   };
 
-  const addWordToList = (listId: string, item: Omit<ListItem, "id" | "addedAt">) => {
+  const addWordToList = (listId: string, item: Omit<ListItem, "id" | "addedAt" | "status"  >) => {
     setLists((prev) => {
       const updated = prev.map((list) => {
         if (list.id !== listId) return list;
@@ -66,8 +78,24 @@ export function useLists() {
           ...list,
           items: [
             ...list.items,
-            { ...item, id: crypto.randomUUID(), addedAt: new Date().toISOString() },
+            { ...item, id: crypto.randomUUID(), addedAt: new Date().toISOString(), status: "new" as WordStatus },
           ],
+        };
+      });
+      saveLists(updated);
+      return updated;
+    });
+  };
+
+  const updateWordStatus = (listId: string, itemId: string, status: WordStatus) => {
+    setLists((prev) => {
+      const updated = prev.map((list) => {
+        if (list.id !== listId) return list;
+        return {
+          ...list,
+          items: list.items.map((item) =>
+            item.id === itemId ? { ...item, status } : item
+          ),
         };
       });
       saveLists(updated);
@@ -87,5 +115,5 @@ export function useLists() {
     });
   };
 
-  return { lists, createList, addWordToList, isWordSaved, deleteList };
+  return { lists, createList, addWordToList, updateWordStatus, isWordSaved, deleteList };
 }

@@ -50,6 +50,16 @@ export default function ListsPage() {
                   <p className="font-medium text-stone-800">{list.name}</p>
                   <p className="text-xs text-stone-400 mt-0.5">
                     {list.items.length} {list.items.length === 1 ? "word" : "words"}
+                    {list.items.some((i) => i.status === "known") && (
+                      <span className="ml-1.5 text-green-500">
+                        · {list.items.filter((i) => i.status === "known").length} known
+                      </span>
+                    )}
+                    {list.items.filter((i) => i.status !== "known").length > 0 && (
+                      <span className="ml-1.5 text-amber-500">
+                        · {list.items.filter((i) => i.status !== "known").length} still learning
+                      </span>
+                    )}
                   </p>
                 </div>
                 <span className="text-stone-300 text-lg">→</span>

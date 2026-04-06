@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ListItem } from "@/hooks/useLists";
+import { ListItem, WordStatus } from "@/hooks/useLists";
 import { parseSourceWordId } from "@/data/index";
 
 type SourceVerse = {
@@ -15,15 +15,16 @@ type Props = {
   item: ListItem;
   index: number;
   total: number;
+  knownCount: number;
   onNext: () => void;
   onPrev: () => void;
+  onStatusChange: (itemId: string, status: WordStatus) => void;
 };
 
 async function fetchSourceVerse(sourceWordId: string): Promise<SourceVerse | null> {
   const parsed = parseSourceWordId(sourceWordId);
   if (!parsed) return null;
 
-  // sourceWordId format: surahId:ayahId:position (1-indexed)
   const wordPosition = parseInt(sourceWordId.split(":")[2] ?? "1");
 
   try {
@@ -44,12 +45,11 @@ async function fetchSourceVerse(sourceWordId: string): Promise<SourceVerse | nul
       .filter((w: { char_type_name: string }) => w.char_type_name === "word")
       .map((w: { text_uthmani: string }) => w.text_uthmani);
 
-    // Truncate to 60 words centred on the tapped word
     let arabic: string;
     if (allWords.length <= 60) {
       arabic = allWords.join(" ");
     } else {
-      const idx = wordPosition - 1; // 0-indexed
+      const idx = wordPosition - 1;
       let start = Math.max(0, idx - 29);
       let end = Math.min(allWords.length - 1, start + 59);
       start = Math.max(0, end - 59);
@@ -70,7 +70,7 @@ async function fetchSourceVerse(sourceWordId: string): Promise<SourceVerse | nul
   }
 }
 
-export default function FlashCard({ item, index, total, onNext, onPrev }: Props) {
+export default function FlashCard({ item, index, total, knownCount, onNext, onPrev, onStatusChange }: Props) {
   const [flipped, setFlipped] = useState(false);
   const [sourceVerse, setSourceVerse] = useState<SourceVerse | null>(null);
 
@@ -82,18 +82,29 @@ export default function FlashCard({ item, index, total, onNext, onPrev }: Props)
   const handleNext = () => { setFlipped(false); setTimeout(onNext, 150); };
   const handlePrev = () => { setFlipped(false); setTimeout(onPrev, 150); };
 
+  const handleStatus = (status: WordStatus) => {
+    onStatusChange(item.id, status);
+    // Auto-advance after marking unless it's the last card
+    if (index < total - 1) {
+      setFlipped(false);
+      setTimeout(onNext, 200);
+    }
+  };
+
+  const remaining = total;
+
   return (
     <div className="flex flex-col items-center w-full">
       {/* Progress */}
       <div className="w-full max-w-sm mb-4">
         <div className="flex justify-between text-xs text-stone-400 mb-1.5">
-          <span>{index + 1} of {total}</span>
+          <span>{remaining} remaining · {knownCount} known</span>
           <span>{flipped ? "tap to flip back" : "tap to reveal"}</span>
         </div>
-        <div className="w-full h-1 bg-stone-100 rounded-full">
+        <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
           <div
-            className="h-1 bg-amber-400 rounded-full transition-all duration-300"
-            style={{ width: `${((index + 1) / total) * 100}%` }}
+            className="h-full bg-green-400 rounded-full transition-all duration-500"
+            style={{ width: `${total > 0 ? (knownCount / total) * 100 : 0}%` }}
           />
         </div>
       </div>
@@ -104,7 +115,10 @@ export default function FlashCard({ item, index, total, onNext, onPrev }: Props)
         className="w-full max-w-sm min-h-72 bg-white rounded-2xl border border-stone-100 shadow-md cursor-pointer select-none transition-all duration-200 active:scale-[0.98]"
       >
         {!flipped ? (
-          <div className="flex flex-col items-center justify-center h-72 px-6">
+          <div className="relative flex flex-col items-center justify-center h-72 px-6">
+            {item.status === "known" && (
+              <span className="absolute top-3 right-3 text-xs text-green-500 uppercase tracking-widest">✓ Known</span>
+            )}
             <p className="font-arabic text-6xl text-stone-800 mb-4 leading-tight">{item.arabic}</p>
             <p className="text-xs text-stone-300 uppercase tracking-widest">{item.lemma}</p>
           </div>
@@ -146,8 +160,26 @@ export default function FlashCard({ item, index, total, onNext, onPrev }: Props)
         )}
       </div>
 
+      {/* Know It / Still Learning — only shown when flipped */}
+      {flipped && (
+        <div className="flex gap-3 mt-4 w-full max-w-sm">
+          <button
+            onClick={(e) => { e.stopPropagation(); handleStatus("learning"); }}
+            className="flex-1 py-3 rounded-xl border-2 border-amber-200 text-amber-700 text-sm font-semibold hover:bg-amber-50 transition-colors"
+          >
+            Still Learning
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleStatus("known"); }}
+            className="flex-1 py-3 rounded-xl border-2 border-green-200 text-green-700 text-sm font-semibold hover:bg-green-50 transition-colors"
+          >
+            Know It ✓
+          </button>
+        </div>
+      )}
+
       {/* Nav */}
-      <div className="flex items-center gap-4 mt-6">
+      <div className="flex items-center gap-4 mt-4">
         <button
           onClick={handlePrev}
           disabled={index === 0}
