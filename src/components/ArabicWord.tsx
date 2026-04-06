@@ -20,7 +20,7 @@ export default function ArabicWord({ word, isSelected, isSaved, onTap }: Props) 
           ? "bg-amber-200 text-amber-900"
           : "hover:bg-amber-50 active:bg-amber-100"
         }
-        ${isSaved && !isSelected ? "underline decoration-amber-400 decoration-2 underline-offset-4" : ""}
+        ${isSaved && !isSelected && word.lemma ? "underline decoration-amber-400 decoration-2 underline-offset-4" : ""}
       `}
     >
       {word.arabic}

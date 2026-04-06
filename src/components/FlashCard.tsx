@@ -23,21 +23,47 @@ async function fetchSourceVerse(sourceWordId: string): Promise<SourceVerse | nul
   const parsed = parseSourceWordId(sourceWordId);
   if (!parsed) return null;
 
+  // sourceWordId format: surahId:ayahId:position (1-indexed)
+  const wordPosition = parseInt(sourceWordId.split(":")[2] ?? "1");
+
   try {
-    const res = await fetch(
-      `https://api.quran.com/api/v4/verses/by_key/${parsed.surahId}:${parsed.ayahId}` +
-        `?words=true&word_fields=text_uthmani&translations=131`
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    const verse = data.verse;
+    const [wordsRes, translationRes] = await Promise.all([
+      fetch(
+        `https://api.quran.com/api/v4/verses/by_key/${parsed.surahId}:${parsed.ayahId}` +
+          `?words=true&word_fields=text_uthmani`
+      ),
+      fetch(
+        `https://api.alquran.cloud/v1/ayah/${parsed.surahId}:${parsed.ayahId}/en.sahih`
+      ),
+    ]);
 
-    const arabic = verse.words
+    if (!wordsRes.ok) return null;
+    const wordsData = await wordsRes.json();
+
+    const allWords: string[] = wordsData.verse.words
       .filter((w: { char_type_name: string }) => w.char_type_name === "word")
-      .map((w: { text_uthmani: string }) => w.text_uthmani)
-      .join(" ");
+      .map((w: { text_uthmani: string }) => w.text_uthmani);
 
-    const translation = verse.translations?.[0]?.text ?? "";
+    // Truncate to 60 words centred on the tapped word
+    let arabic: string;
+    if (allWords.length <= 60) {
+      arabic = allWords.join(" ");
+    } else {
+      const idx = wordPosition - 1; // 0-indexed
+      let start = Math.max(0, idx - 29);
+      let end = Math.min(allWords.length - 1, start + 59);
+      start = Math.max(0, end - 59);
+      arabic = allWords.slice(start, end + 1).join(" ");
+      if (start > 0) arabic = "…" + arabic;
+      if (end < allWords.length - 1) arabic = arabic + "…";
+    }
+
+    let translation = "";
+    if (translationRes.ok) {
+      const translationData = await translationRes.json();
+      translation = translationData.data?.text ?? "";
+    }
+
     return { surahId: parsed.surahId, ayahId: parsed.ayahId, arabic, translation };
   } catch {
     return null;

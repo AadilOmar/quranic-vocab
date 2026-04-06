@@ -1,3 +1,5 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import { Surah, Ayah, Word } from "@/types";
 
 const API_BASE = "https://api.quran.com/api/v4";
@@ -38,11 +40,11 @@ export async function fetchChapters(): Promise<ChapterInfo[]> {
 type MorphEntry = { root: string | null; lemma: string | null; pos: string };
 type MorphMap = Record<string, MorphEntry>; // key: "ayah:word"
 
-async function fetchMorphology(surahId: number): Promise<MorphMap> {
+function fetchMorphology(surahId: number): MorphMap {
   try {
-    const res = await fetch(`/data/morphology/${surahId}.json`);
-    if (!res.ok) return {};
-    return await res.json();
+    const filePath = join(process.cwd(), "public", "data", "morphology", `${surahId}.json`);
+    const raw = readFileSync(filePath, "utf-8");
+    return JSON.parse(raw);
   } catch {
     return {};
   }
@@ -51,20 +53,32 @@ async function fetchMorphology(surahId: number): Promise<MorphMap> {
 // ── Full surah ───────────────────────────────────────────────
 
 export async function fetchSurah(surahId: number): Promise<Surah> {
-  const [versesRes, morphMap] = await Promise.all([
+  const morphMap = fetchMorphology(surahId);
+
+  const [versesRes, translationRes] = await Promise.all([
     fetch(
       `${API_BASE}/verses/by_chapter/${surahId}` +
         `?words=true` +
         `&word_fields=text_uthmani,transliteration,translation` +
-        `&per_page=300` +
-        `&translations=131`,
+        `&per_page=300`,
       { next: { revalidate: 86400 } }
     ),
-    fetchMorphology(surahId),
+    fetch(`https://api.alquran.cloud/v1/surah/${surahId}/en.sahih`, {
+      next: { revalidate: 86400 },
+    }),
   ]);
 
   if (!versesRes.ok) throw new Error(`Failed to fetch surah ${surahId}`);
   const versesData = await versesRes.json();
+
+  // Build a verse translation map: ayahNumber → translation text
+  const translationMap: Record<number, string> = {};
+  if (translationRes.ok) {
+    const translationData = await translationRes.json();
+    for (const ayah of translationData.data?.ayahs ?? []) {
+      translationMap[ayah.numberInSurah] = ayah.text;
+    }
+  }
 
   const chapterRes = await fetch(`${API_BASE}/chapters/${surahId}?language=en`, {
     next: { revalidate: 86400 },
@@ -82,10 +96,9 @@ export async function fetchSurah(surahId: number): Promise<Surah> {
       translation: { text: string };
       transliteration: { text: string | null };
     }[];
-    translations: { text: string }[];
   }) => {
     const ayahId = verse.verse_number;
-    const translation = verse.translations?.[0]?.text ?? "";
+    const translation = translationMap[ayahId] ?? "";
 
     const words: Word[] = verse.words
       .filter((w) => w.char_type_name === "word") // skip verse number glyphs
