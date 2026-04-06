@@ -24,6 +24,15 @@ export type SavedList = {
 
 const STORAGE_KEY = "quran-vocab-lists";
 
+function generateId(): string {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    // Fallback for non-secure contexts (e.g. local network HTTP)
+    return Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+}
+
 function loadLists(): SavedList[] {
   if (typeof window === "undefined") return [];
   try {
@@ -56,7 +65,7 @@ export function useLists() {
 
   const createList = (name: string): SavedList => {
     const newList: SavedList = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       name,
       createdAt: new Date().toISOString(),
       items: [],
@@ -78,7 +87,7 @@ export function useLists() {
           ...list,
           items: [
             ...list.items,
-            { ...item, id: crypto.randomUUID(), addedAt: new Date().toISOString(), status: "new" as WordStatus },
+            { ...item, id: generateId(), addedAt: new Date().toISOString(), status: "new" as WordStatus },
           ],
         };
       });

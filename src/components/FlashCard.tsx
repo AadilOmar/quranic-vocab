@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ListItem, WordStatus } from "@/hooks/useLists";
+import { ListItem } from "@/hooks/useLists";
 import { parseSourceWordId } from "@/data/index";
 
 type SourceVerse = {
@@ -16,9 +16,8 @@ type Props = {
   index: number;
   total: number;
   knownCount: number;
-  onNext: () => void;
-  onPrev: () => void;
-  onStatusChange: (itemId: string, status: WordStatus) => void;
+  flipped: boolean;
+  onFlip: () => void;
 };
 
 async function fetchSourceVerse(sourceWordId: string): Promise<SourceVerse | null> {
@@ -70,8 +69,7 @@ async function fetchSourceVerse(sourceWordId: string): Promise<SourceVerse | nul
   }
 }
 
-export default function FlashCard({ item, index, total, knownCount, onNext, onPrev, onStatusChange }: Props) {
-  const [flipped, setFlipped] = useState(false);
+export default function FlashCard({ item, index, total, knownCount, flipped, onFlip }: Props) {
   const [sourceVerse, setSourceVerse] = useState<SourceVerse | null>(null);
 
   useEffect(() => {
@@ -79,26 +77,12 @@ export default function FlashCard({ item, index, total, knownCount, onNext, onPr
     fetchSourceVerse(item.sourceWordId).then(setSourceVerse);
   }, [item.sourceWordId]);
 
-  const handleNext = () => { setFlipped(false); setTimeout(onNext, 150); };
-  const handlePrev = () => { setFlipped(false); setTimeout(onPrev, 150); };
-
-  const handleStatus = (status: WordStatus) => {
-    onStatusChange(item.id, status);
-    // Auto-advance after marking unless it's the last card
-    if (index < total - 1) {
-      setFlipped(false);
-      setTimeout(onNext, 200);
-    }
-  };
-
-  const remaining = total;
-
   return (
-    <div className="flex flex-col items-center w-full">
+    <div className="flex flex-col w-full">
       {/* Progress */}
-      <div className="w-full max-w-sm mb-4">
+      <div className="mb-4">
         <div className="flex justify-between text-xs text-stone-400 mb-1.5">
-          <span>{remaining} remaining · {knownCount} known</span>
+          <span>{total} remaining · {knownCount} known</span>
           <span>{flipped ? "tap to flip back" : "tap to reveal"}</span>
         </div>
         <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
@@ -111,11 +95,11 @@ export default function FlashCard({ item, index, total, knownCount, onNext, onPr
 
       {/* Card */}
       <div
-        onClick={() => setFlipped((f) => !f)}
-        className="w-full max-w-sm min-h-72 bg-white rounded-2xl border border-stone-100 shadow-md cursor-pointer select-none transition-all duration-200 active:scale-[0.98]"
+        onClick={onFlip}
+        className="w-full bg-white rounded-2xl border border-stone-100 shadow-md cursor-pointer select-none transition-all duration-200 active:scale-[0.98]"
       >
         {!flipped ? (
-          <div className="relative flex flex-col items-center justify-center h-72 px-6">
+          <div className="relative flex flex-col items-center justify-center h-56 px-6">
             {item.status === "known" && (
               <span className="absolute top-3 right-3 text-xs text-green-500 uppercase tracking-widest">✓ Known</span>
             )}
@@ -158,48 +142,6 @@ export default function FlashCard({ item, index, total, knownCount, onNext, onPr
             )}
           </div>
         )}
-      </div>
-
-      {/* Know It / Still Learning — only shown when flipped */}
-      {flipped && (
-        <div className="flex gap-3 mt-4 w-full max-w-sm">
-          <button
-            onClick={(e) => { e.stopPropagation(); handleStatus("learning"); }}
-            className="flex-1 py-3 rounded-xl border-2 border-amber-200 text-amber-700 text-sm font-semibold hover:bg-amber-50 transition-colors"
-          >
-            Still Learning
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); handleStatus("known"); }}
-            className="flex-1 py-3 rounded-xl border-2 border-green-200 text-green-700 text-sm font-semibold hover:bg-green-50 transition-colors"
-          >
-            Know It ✓
-          </button>
-        </div>
-      )}
-
-      {/* Nav */}
-      <div className="flex items-center gap-4 mt-4">
-        <button
-          onClick={handlePrev}
-          disabled={index === 0}
-          className="px-6 py-2.5 rounded-xl border border-stone-200 text-stone-500 text-sm font-medium disabled:opacity-30 hover:border-stone-300 transition-colors"
-        >
-          ← Prev
-        </button>
-        <button
-          onClick={() => setFlipped((f) => !f)}
-          className="px-6 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 transition-colors"
-        >
-          {flipped ? "Hide" : "Reveal"}
-        </button>
-        <button
-          onClick={handleNext}
-          disabled={index === total - 1}
-          className="px-6 py-2.5 rounded-xl border border-stone-200 text-stone-500 text-sm font-medium disabled:opacity-30 hover:border-stone-300 transition-colors"
-        >
-          Next →
-        </button>
       </div>
     </div>
   );

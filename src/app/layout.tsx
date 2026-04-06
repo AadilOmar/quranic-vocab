@@ -11,6 +11,9 @@ const amiri = Amiri({
 export const metadata: Metadata = {
   title: "Quran Vocabulary",
   description: "Read the Quran and learn vocabulary word by word",
+  other: {
+    "google": "notranslate",
+  },
 };
 
 export default function RootLayout({
@@ -19,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${amiri.variable} h-full`}>
+    <html lang="en" translate="no" className={`${amiri.variable} h-full`}>
       <body className="min-h-full bg-[#FAFAF7] text-stone-800">{children}</body>
     </html>
   );
