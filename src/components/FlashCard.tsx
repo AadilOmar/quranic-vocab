@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ListItem } from "@/hooks/useLists";
 import { parseSourceWordId } from "@/data/index";
 
@@ -15,9 +15,10 @@ type Props = {
   item: ListItem;
   index: number;
   total: number;
-  knownCount: number;
   flipped: boolean;
   onFlip: () => void;
+  onSwipeLeft: () => void;
+  onSwipeRight: () => void;
 };
 
 async function fetchSourceVerse(sourceWordId: string): Promise<SourceVerse | null> {
@@ -69,72 +70,73 @@ async function fetchSourceVerse(sourceWordId: string): Promise<SourceVerse | nul
   }
 }
 
-export default function FlashCard({ item, index, total, knownCount, flipped, onFlip }: Props) {
+export default function FlashCard({ item, index, total, flipped, onFlip, onSwipeLeft, onSwipeRight }: Props) {
   const [sourceVerse, setSourceVerse] = useState<SourceVerse | null>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     setSourceVerse(null);
     fetchSourceVerse(item.sourceWordId).then(setSourceVerse);
   }, [item.sourceWordId]);
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY };
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStart.current) return;
+    const dx = e.changedTouches[0].clientX - touchStart.current.x;
+    const dy = e.changedTouches[0].clientY - touchStart.current.y;
+    touchStart.current = null;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return;
+    e.preventDefault();
+    if (dx < 0) onSwipeLeft();
+    else onSwipeRight();
+  };
+
   return (
     <div className="flex flex-col w-full">
-      {/* Progress */}
-      <div className="mb-4">
-        <div className="flex justify-between text-xs text-stone-400 mb-1.5">
-          <span>{total} remaining · {knownCount} known</span>
-          <span>{flipped ? "tap to flip back" : "tap to reveal"}</span>
-        </div>
-        <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-green-400 rounded-full transition-all duration-500"
-            style={{ width: `${total > 0 ? (knownCount / total) * 100 : 0}%` }}
-          />
-        </div>
-      </div>
-
       {/* Card */}
       <div
         onClick={onFlip}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         className="w-full bg-white rounded-2xl border border-stone-100 shadow-md cursor-pointer select-none transition-all duration-200 active:scale-[0.98]"
       >
         {!flipped ? (
-          <div className="relative flex flex-col items-center justify-center h-56 px-6">
+          <div className="relative flex items-center justify-center h-56 px-6">
             {item.status === "known" && (
               <span className="absolute top-3 right-3 text-xs text-green-500 uppercase tracking-widest">✓ Known</span>
             )}
-            <p className="font-arabic text-6xl text-stone-800 mb-4 leading-tight">{item.arabic}</p>
-            <p className="text-xs text-stone-300 uppercase tracking-widest">{item.lemma}</p>
+            <p className="font-arabic text-5xl text-stone-800 leading-tight">{item.arabic}</p>
           </div>
         ) : (
-          <div className="flex flex-col px-6 py-6 gap-4">
-            <div className="text-center">
-              <p className="text-xl font-semibold text-stone-700">{item.meaning}</p>
-            </div>
-
-            <div className="border-t border-stone-100" />
-
-            <div className="flex justify-around">
-              <div className="text-center">
-                <p className="text-xs uppercase tracking-widest text-stone-400 mb-1">Root</p>
-                <p className="font-arabic text-xl text-stone-700">{item.root || "—"}</p>
-              </div>
-              <div className="w-px bg-stone-100" />
-              <div className="text-center">
-                <p className="text-xs uppercase tracking-widest text-stone-400 mb-1">Lemma</p>
-                <p className="font-arabic text-xl text-stone-700">{item.lemma || "—"}</p>
-              </div>
+          <div className="flex flex-col px-6 pb-6">
+            {/* Meaning — same height as Arabic front */}
+            <div className="flex items-center justify-center h-56 text-center px-2">
+              <p className="text-3xl font-semibold text-stone-700">{item.meaning}</p>
             </div>
 
             {sourceVerse && (
               <>
-                <div className="border-t border-stone-100" />
                 <div className="bg-amber-50 rounded-xl px-4 py-3">
                   <p className="text-xs uppercase tracking-widest text-amber-600 mb-2">
                     Surah {sourceVerse.surahId}:{sourceVerse.ayahId}
                   </p>
                   <p dir="rtl" className="font-arabic text-lg text-stone-700 leading-loose mb-2 text-right">
-                    {sourceVerse.arabic}
+                    {sourceVerse.arabic.split(" ").map((token, i) => {
+                      const strip = (s: string) => s.replace(/[\u0610-\u061A\u064B-\u065F]/g, "");
+                      const isMatch = strip(token) === strip(item.arabic);
+                      return (
+                        <span key={i}>
+                          {i > 0 && " "}
+                          {isMatch
+                            ? <span className="bg-amber-200 text-amber-900 rounded px-0.5 font-bold">{token}</span>
+                            : token}
+                        </span>
+                      );
+                    })}
                   </p>
                   <p className="text-xs text-stone-500 leading-relaxed">{sourceVerse.translation}</p>
                 </div>

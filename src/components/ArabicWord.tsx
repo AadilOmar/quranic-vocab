@@ -18,7 +18,7 @@ export default function ArabicWord({ word, isSelected, isSaved, onTap }: Props) 
       style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
       className={`
         inline-block cursor-pointer rounded px-1 py-0.5 mx-0.5
-        text-3xl leading-loose font-arabic transition-colors duration-150
+        text-2xl leading-loose font-arabic transition-colors duration-150
         select-none touch-manipulation
         ${isSelected
           ? "bg-amber-200 text-amber-900"

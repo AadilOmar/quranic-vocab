@@ -116,6 +116,17 @@ export function useLists() {
     return lists.some((list) => list.items.some((item) => item.lemma === lemma));
   };
 
+  const removeWordFromList = (listId: string, itemId: string) => {
+    setLists((prev) => {
+      const updated = prev.map((list) => {
+        if (list.id !== listId) return list;
+        return { ...list, items: list.items.filter((item) => item.id !== itemId) };
+      });
+      saveLists(updated);
+      return updated;
+    });
+  };
+
   const deleteList = (listId: string) => {
     setLists((prev) => {
       const updated = prev.filter((l) => l.id !== listId);
@@ -124,5 +135,5 @@ export function useLists() {
     });
   };
 
-  return { lists, createList, addWordToList, updateWordStatus, isWordSaved, deleteList };
+  return { lists, createList, addWordToList, updateWordStatus, removeWordFromList, isWordSaved, deleteList };
 }

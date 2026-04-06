@@ -90,13 +90,13 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
         </div>
 
         {word && (
-          <div className="px-5 pb-10 pt-3 max-w-xl mx-auto">
+          <div className="px-5 pb-10 pt-6 max-w-xl mx-auto">
 
             {/* ── DETAIL VIEW ── */}
             {view === "detail" && (
               <>
                 <div className="flex items-start justify-between mb-5">
-                  <div className="flex-1">
+                  <div className="flex-1 text-center">
                     <p className="font-arabic text-5xl text-stone-800 leading-tight mb-2">
                       {word.arabic}
                     </p>
