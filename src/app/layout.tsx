@@ -11,7 +11,7 @@ const amiri = Amiri({
 
 export const metadata: Metadata = {
   title: "Quran Vocabulary",
-  description: "Read the Quran and build your vocabulary word by word",
+  description: "Read the Quran and learn vocabulary word by word",
   other: {
     "google": "notranslate",
   },
