@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Amiri } from "next/font/google";
 import "./globals.css";
+import AuthGate from "@/components/AuthGate";
 
 const amiri = Amiri({
   variable: "--font-amiri",
@@ -23,7 +24,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" translate="no" className={`${amiri.variable} h-full`}>
-      <body className="min-h-full bg-[#FAFAF7] text-stone-800">{children}</body>
+      <body className="min-h-full bg-[#FAFAF7] text-stone-800">
+        <AuthGate>{children}</AuthGate>
+      </body>
     </html>
   );
 }

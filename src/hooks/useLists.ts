@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { getSupabase } from "@/lib/supabase";
 
 export type WordStatus = "new" | "learning" | "known";
 
@@ -22,118 +23,143 @@ export type SavedList = {
   items: ListItem[];
 };
 
-const STORAGE_KEY = "quran-vocab-lists";
-
-function generateId(): string {
-  try {
-    return crypto.randomUUID();
-  } catch {
-    // Fallback for non-secure contexts (e.g. local network HTTP)
-    return Date.now().toString(36) + Math.random().toString(36).slice(2);
-  }
-}
-
-function loadLists(): SavedList[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const lists: SavedList[] = JSON.parse(raw);
-    // Migrate old items that lack a status field
-    return lists.map((list) => ({
-      ...list,
-      items: list.items.map((item) => ({
-        ...item,
-        status: item.status ?? "new",
-      })),
-    }));
-  } catch {
-    return [];
-  }
-}
-
-function saveLists(lists: SavedList[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(lists));
-}
-
 export function useLists() {
   const [lists, setLists] = useState<SavedList[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLists(loadLists());
+    const supabase = getSupabase();
+
+    supabase
+      .from("lists")
+      .select("id, name, created_at, list_items(id, lemma, root, meaning, arabic, source_word_id, added_at, status)")
+      .order("created_at")
+      .then(({ data }) => {
+        type RawItem = { id: string; lemma: string; root: string | null; meaning: string; arabic: string; source_word_id: string; added_at: string; status: string };
+        type RawList = { id: string; name: string; created_at: string; list_items: RawItem[] };
+        const rows = (data ?? []) as RawList[];
+        setLists(
+          rows.map((l) => ({
+            id: l.id,
+            name: l.name,
+            createdAt: l.created_at,
+            items: (l.list_items ?? [])
+              .map((i) => ({
+                id: i.id,
+                lemma: i.lemma,
+                root: i.root ?? "",
+                meaning: i.meaning,
+                arabic: i.arabic,
+                sourceWordId: i.source_word_id,
+                addedAt: i.added_at,
+                status: (i.status as WordStatus) ?? "new",
+              }))
+              .sort((a, b) => new Date(a.addedAt).getTime() - new Date(b.addedAt).getTime()),
+          }))
+        );
+        setLoading(false);
+      });
   }, []);
 
-  const createList = (name: string): SavedList => {
+  const createList = async (name: string): Promise<SavedList> => {
+    const { data, error } = await getSupabase()
+      .from("lists")
+      .insert({ name })
+      .select()
+      .single();
+
+    if (error || !data) throw error;
+
     const newList: SavedList = {
-      id: generateId(),
-      name,
-      createdAt: new Date().toISOString(),
+      id: data.id,
+      name: data.name,
+      createdAt: data.created_at,
       items: [],
     };
-    setLists((prev) => {
-      const updated = [...prev, newList];
-      saveLists(updated);
-      return updated;
-    });
+    setLists((prev) => [...prev, newList]);
     return newList;
   };
 
-  const addWordToList = (listId: string, item: Omit<ListItem, "id" | "addedAt" | "status"  >) => {
-    setLists((prev) => {
-      const updated = prev.map((list) => {
-        if (list.id !== listId) return list;
-        if (list.items.some((i) => i.lemma === item.lemma)) return list;
-        return {
-          ...list,
-          items: [
-            ...list.items,
-            { ...item, id: generateId(), addedAt: new Date().toISOString(), status: "new" as WordStatus },
-          ],
-        };
-      });
-      saveLists(updated);
-      return updated;
-    });
+  const addWordToList = async (
+    listId: string,
+    item: Omit<ListItem, "id" | "addedAt" | "status">
+  ) => {
+    const list = lists.find((l) => l.id === listId);
+    if (list?.items.some((i) => i.lemma === item.lemma)) return;
+
+    const { data, error } = await getSupabase()
+      .from("list_items")
+      .insert({
+        list_id: listId,
+        lemma: item.lemma,
+        root: item.root,
+        meaning: item.meaning,
+        arabic: item.arabic,
+        source_word_id: item.sourceWordId,
+        status: "new",
+      })
+      .select()
+      .single();
+
+    if (error || !data) return;
+
+    const newItem: ListItem = {
+      id: data.id,
+      lemma: data.lemma,
+      root: data.root ?? "",
+      meaning: data.meaning,
+      arabic: data.arabic,
+      sourceWordId: data.source_word_id,
+      addedAt: data.added_at,
+      status: "new",
+    };
+    setLists((prev) =>
+      prev.map((l) =>
+        l.id === listId ? { ...l, items: [...l.items, newItem] } : l
+      )
+    );
   };
 
-  const updateWordStatus = (listId: string, itemId: string, status: WordStatus) => {
-    setLists((prev) => {
-      const updated = prev.map((list) => {
-        if (list.id !== listId) return list;
-        return {
-          ...list,
-          items: list.items.map((item) =>
-            item.id === itemId ? { ...item, status } : item
-          ),
-        };
-      });
-      saveLists(updated);
-      return updated;
-    });
+  const updateWordStatus = async (
+    listId: string,
+    itemId: string,
+    status: WordStatus
+  ) => {
+    await getSupabase().from("list_items").update({ status }).eq("id", itemId);
+    setLists((prev) =>
+      prev.map((l) =>
+        l.id !== listId
+          ? l
+          : { ...l, items: l.items.map((i) => (i.id === itemId ? { ...i, status } : i)) }
+      )
+    );
   };
 
-  const isWordSaved = (lemma: string): boolean => {
-    return lists.some((list) => list.items.some((item) => item.lemma === lemma));
+  const removeWordFromList = async (listId: string, itemId: string) => {
+    await getSupabase().from("list_items").delete().eq("id", itemId);
+    setLists((prev) =>
+      prev.map((l) =>
+        l.id !== listId ? l : { ...l, items: l.items.filter((i) => i.id !== itemId) }
+      )
+    );
   };
 
-  const removeWordFromList = (listId: string, itemId: string) => {
-    setLists((prev) => {
-      const updated = prev.map((list) => {
-        if (list.id !== listId) return list;
-        return { ...list, items: list.items.filter((item) => item.id !== itemId) };
-      });
-      saveLists(updated);
-      return updated;
-    });
+  const deleteList = async (listId: string) => {
+    await getSupabase().from("lists").delete().eq("id", listId);
+    setLists((prev) => prev.filter((l) => l.id !== listId));
   };
 
-  const deleteList = (listId: string) => {
-    setLists((prev) => {
-      const updated = prev.filter((l) => l.id !== listId);
-      saveLists(updated);
-      return updated;
-    });
-  };
+  const isWordSaved = (lemma: string): boolean =>
+    lists.some((l) => l.items.some((i) => i.lemma === lemma));
 
-  return { lists, createList, addWordToList, updateWordStatus, removeWordFromList, isWordSaved, deleteList };
+  return {
+    lists,
+    loading,
+    createList,
+    addWordToList,
+    updateWordStatus,
+    removeWordFromList,
+    isWordSaved,
+    deleteList,
+  };
 }

@@ -8,7 +8,7 @@ type Props = {
   word: Word | null;
   onClose: () => void;
   lists: SavedList[];
-  createList: (name: string) => SavedList;
+  createList: (name: string) => Promise<SavedList>;
   addWordToList: (listId: string, item: Omit<ListItem, "id" | "addedAt" | "status">) => void;
   isWordSaved: (lemma: string) => boolean;
 };
@@ -59,9 +59,9 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
     setView("detail");
   };
 
-  const handleCreateAndAdd = () => {
+  const handleCreateAndAdd = async () => {
     if (!newListName.trim() || !word) return;
-    const newList = createList(newListName.trim());
+    const newList = await createList(newListName.trim());
     handleAddToList(newList.id);
     setNewListName("");
   };
