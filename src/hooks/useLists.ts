@@ -62,13 +62,9 @@ export function useLists() {
   }, []);
 
   const createList = async (name: string): Promise<SavedList> => {
-    const { data: { session } } = await getSupabase().auth.getSession();
-    if (!session?.user) throw new Error("Not authenticated");
-    const user = session.user;
-
     const { data, error } = await getSupabase()
       .from("lists")
-      .insert({ name, user_id: user.id })
+      .insert({ name })
       .select()
       .single();
 
