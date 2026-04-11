@@ -6,6 +6,7 @@ import { parseSourceWordId } from "@/data/index";
 
 type SourceVerse = {
   surahId: number;
+  surahName: string;
   ayahId: number;
   arabic: string;
   translation: string;
@@ -28,7 +29,7 @@ async function fetchSourceVerse(sourceWordId: string): Promise<SourceVerse | nul
   const wordPosition = parseInt(sourceWordId.split(":")[2] ?? "1");
 
   try {
-    const [wordsRes, translationRes] = await Promise.all([
+    const [wordsRes, translationRes, chapterRes] = await Promise.all([
       fetch(
         `https://api.quran.com/api/v4/verses/by_key/${parsed.surahId}:${parsed.ayahId}` +
           `?words=true&word_fields=text_uthmani`
@@ -36,6 +37,7 @@ async function fetchSourceVerse(sourceWordId: string): Promise<SourceVerse | nul
       fetch(
         `https://api.alquran.cloud/v1/ayah/${parsed.surahId}:${parsed.ayahId}/en.sahih`
       ),
+      fetch(`https://api.quran.com/api/v4/chapters/${parsed.surahId}?language=en`),
     ]);
 
     if (!wordsRes.ok) return null;
@@ -64,7 +66,13 @@ async function fetchSourceVerse(sourceWordId: string): Promise<SourceVerse | nul
       translation = translationData.data?.text ?? "";
     }
 
-    return { surahId: parsed.surahId, ayahId: parsed.ayahId, arabic, translation };
+    let surahName = `Surah ${parsed.surahId}`;
+    if (chapterRes.ok) {
+      const chapterData = await chapterRes.json();
+      surahName = chapterData.chapter?.name_simple ?? surahName;
+    }
+
+    return { surahId: parsed.surahId, surahName, ayahId: parsed.ayahId, arabic, translation };
   } catch {
     return null;
   }
@@ -122,7 +130,7 @@ export default function FlashCard({ item, index, total, flipped, onFlip, onSwipe
               <>
                 <div className="bg-amber-50 rounded-xl px-4 py-3">
                   <p className="text-xs uppercase tracking-widest text-amber-600 mb-2">
-                    Surah {sourceVerse.surahId}:{sourceVerse.ayahId}
+                    {sourceVerse.surahName} {sourceVerse.surahId}:{sourceVerse.ayahId}
                   </p>
                   <p dir="rtl" className="font-arabic text-lg text-stone-700 leading-loose mb-2 text-right">
                     {sourceVerse.arabic.split(" ").map((token, i) => {
