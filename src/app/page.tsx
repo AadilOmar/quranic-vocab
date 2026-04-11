@@ -8,7 +8,7 @@ export default async function Home() {
     <div className="max-w-xl mx-auto px-4 py-10">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-stone-800 mb-1">Quran Vocabulary</h1>
-        <p className="text-sm text-stone-400">Tap any word to learn its meaning, root, and more.</p>
+        <p className="text-sm text-stone-400">Tap any word to learn its meaning and root, and save it to a flashcard list.</p>
       </div>
 
       <div className="space-y-2">
