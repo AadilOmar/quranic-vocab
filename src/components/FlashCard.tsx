@@ -10,6 +10,8 @@ type SourceVerse = {
   ayahId: number;
   arabic: string;
   translation: string;
+  prevArabic?: string;
+  prevTranslation?: string;
 };
 
 type Props = {
@@ -72,7 +74,34 @@ async function fetchSourceVerse(sourceWordId: string): Promise<SourceVerse | nul
       surahName = chapterData.chapter?.name_simple ?? surahName;
     }
 
-    return { surahId: parsed.surahId, surahName, ayahId: parsed.ayahId, arabic, translation };
+    let prevArabic: string | undefined;
+    let prevTranslation: string | undefined;
+    if (allWords.length < 10 && parsed.ayahId > 1) {
+      const [prevWordsRes, prevTranslationRes] = await Promise.all([
+        fetch(
+          `https://api.quran.com/api/v4/verses/by_key/${parsed.surahId}:${parsed.ayahId - 1}` +
+            `?words=true&word_fields=text_uthmani`
+        ),
+        fetch(`https://api.alquran.cloud/v1/ayah/${parsed.surahId}:${parsed.ayahId - 1}/en.sahih`),
+      ]);
+      if (prevWordsRes.ok) {
+        const prevWordsData = await prevWordsRes.json();
+        const prevWords: string[] = prevWordsData.verse.words
+          .filter((w: { char_type_name: string }) => w.char_type_name === "word")
+          .map((w: { text_uthmani: string }) => w.text_uthmani);
+        if (prevWords.length > 8) {
+          prevArabic = "…" + prevWords.slice(-5).join(" ");
+        } else {
+          prevArabic = prevWords.join(" ");
+        }
+      }
+      if (prevTranslationRes.ok) {
+        const prevTranslationData = await prevTranslationRes.json();
+        prevTranslation = prevTranslationData.data?.text ?? undefined;
+      }
+    }
+
+    return { surahId: parsed.surahId, surahName, ayahId: parsed.ayahId, arabic, translation, prevArabic, prevTranslation };
   } catch {
     return null;
   }
@@ -132,6 +161,11 @@ export default function FlashCard({ item, index, total, flipped, onFlip, onSwipe
                   <p className="text-xs uppercase tracking-widest text-amber-600 mb-2">
                     {sourceVerse.surahName} {sourceVerse.surahId}:{sourceVerse.ayahId}
                   </p>
+                  {sourceVerse.prevArabic && (
+                    <p dir="rtl" className="font-arabic text-base text-stone-400 leading-loose mb-1 text-right">
+                      {sourceVerse.prevArabic}
+                    </p>
+                  )}
                   <p dir="rtl" className="font-arabic text-lg text-stone-700 leading-loose mb-2 text-right">
                     {sourceVerse.arabic.split(" ").map((token, i) => {
                       const strip = (s: string) => s.replace(/[\u0610-\u061A\u064B-\u065F]/g, "");
@@ -146,6 +180,9 @@ export default function FlashCard({ item, index, total, flipped, onFlip, onSwipe
                       );
                     })}
                   </p>
+                  {sourceVerse.prevTranslation && (
+                    <p className="text-xs text-stone-400 leading-relaxed mb-1 italic">{sourceVerse.prevTranslation}</p>
+                  )}
                   <p className="text-xs text-stone-500 leading-relaxed">{sourceVerse.translation}</p>
                 </div>
               </>
