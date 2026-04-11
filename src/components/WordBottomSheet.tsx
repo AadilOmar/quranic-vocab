@@ -4,6 +4,14 @@ import { useEffect, useState } from "react";
 import { Word } from "@/types";
 import { SavedList, ListItem } from "@/hooks/useLists";
 
+let lemmaCounts: Record<string, number> | null = null;
+async function getLemmaCounts(): Promise<Record<string, number>> {
+  if (lemmaCounts) return lemmaCounts;
+  const res = await fetch("/data/lemma-counts.json");
+  lemmaCounts = await res.json();
+  return lemmaCounts!;
+}
+
 type Props = {
   word: Word | null;
   onClose: () => void;
@@ -20,12 +28,17 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
   const [view, setView] = useState<SheetView>("detail");
   const [newListName, setNewListName] = useState("");
   const [savedFeedback, setSavedFeedback] = useState(false);
+  const [occurrences, setOccurrences] = useState<number | null>(null);
 
   // Reset to detail view when word changes
   useEffect(() => {
     setView("detail");
     setSavedFeedback(false);
     setNewListName("");
+    setOccurrences(null);
+    if (word?.lemma) {
+      getLemmaCounts().then((counts) => setOccurrences(counts[word.lemma] ?? 0));
+    }
   }, [word?.id]);
 
   // Close on Escape
@@ -129,6 +142,12 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
                   <div className="flex items-center justify-between">
                     <span className="text-xs uppercase tracking-widest text-stone-400">Part of Speech</span>
                     <span className="text-sm text-stone-600 capitalize">{word.pos}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs uppercase tracking-widest text-stone-400">Occurrences</span>
+                    <span className="text-sm text-stone-600">
+                      {occurrences === null ? "…" : `${occurrences.toLocaleString()} times in Quran`}
+                    </span>
                   </div>
                 </div>
 
