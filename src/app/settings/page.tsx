@@ -5,7 +5,7 @@ import { useSettings, TRANSLATIONS } from "@/hooks/useSettings";
 
 export default function SettingsPage() {
   const { signOut, user } = useAuth();
-  const { translation, setTranslation } = useSettings();
+  const { translation, setTranslation, loading } = useSettings();
 
   return (
     <div className="max-w-xl mx-auto px-4 py-10 pb-24">
@@ -23,12 +23,12 @@ export default function SettingsPage() {
               onClick={() => setTranslation(t.id)}
               className={`w-full flex items-center justify-between px-4 py-3.5 text-left transition-colors ${
                 i < TRANSLATIONS.length - 1 ? "border-b border-stone-100" : ""
-              } ${translation === t.id ? "bg-amber-50" : "hover:bg-stone-50"}`}
+              } ${!loading && translation === t.id ? "bg-amber-50" : "hover:bg-stone-50"}`}
             >
-              <span className={`text-sm ${translation === t.id ? "font-semibold text-amber-700" : "text-stone-700"}`}>
+              <span className={`text-sm ${!loading && translation === t.id ? "font-semibold text-amber-700" : "text-stone-700"}`}>
                 {t.name}
               </span>
-              {translation === t.id && (
+              {!loading && translation === t.id && (
                 <span className="text-amber-500 text-sm">✓</span>
               )}
             </button>
