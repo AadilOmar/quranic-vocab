@@ -45,9 +45,10 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-100 flex items-center justify-around z-50"
+      className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-100 z-50"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
+      <div className="max-w-xl mx-auto flex items-center justify-around">
       {tabs.map(({ href, label, Icon }) => {
         const isActive =
           href === "/"
@@ -66,6 +67,7 @@ export default function BottomNav() {
           </Link>
         );
       })}
+      </div>
     </nav>
   );
 }
