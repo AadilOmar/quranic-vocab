@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import BottomNav from "@/components/BottomNav";
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading, signIn, signUp, signOut } = useAuth();
@@ -113,13 +114,8 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {children}
-      <button
-        onClick={signOut}
-        className="fixed top-4 right-4 text-xs text-stone-300 hover:text-stone-500 z-50"
-      >
-        Sign out
-      </button>
+      <div className="pb-16">{children}</div>
+      <BottomNav />
     </>
   );
 }

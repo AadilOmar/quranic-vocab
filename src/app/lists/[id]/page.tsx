@@ -125,18 +125,11 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
     }
 
     return (
-      <div className="flex flex-col h-dvh max-w-xl mx-auto">
+      <div className="flex flex-col max-w-xl mx-auto" style={{ height: "calc(100dvh - 4rem)" }}>
         {/* Header */}
         <div className="px-4 pt-6 pb-3 shrink-0">
-          <div className="flex items-center justify-between mb-4">
-            <button
-              onClick={() => setView("words")}
-              className="text-sm text-stone-400 hover:text-stone-600"
-            >
-              ← Words
-            </button>
+          <div className="flex items-center justify-center mb-4">
             <h1 className="text-base font-semibold text-stone-700">{list.name}</h1>
-            <div className="w-12" />
           </div>
 
           <div className="flex justify-center">
@@ -239,10 +232,8 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
   return (
     <div className="max-w-xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <Link href="/lists" className="text-sm text-stone-400 hover:text-stone-600">← Lists</Link>
+      <div className="flex items-center justify-center mb-4">
         <h1 className="text-base font-semibold text-stone-700">{list.name}</h1>
-        <div className="w-12" />
       </div>
 
       {/* Practice button — always visible */}

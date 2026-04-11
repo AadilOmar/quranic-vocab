@@ -8,17 +8,9 @@ export default function ListsPage() {
 
   return (
     <div className="max-w-xl mx-auto px-4 py-10">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-stone-800 mb-1">My Lists</h1>
-          <p className="text-sm text-stone-400">Words you've saved while reading.</p>
-        </div>
-        <Link
-          href="/"
-          className="text-sm text-stone-400 hover:text-stone-600"
-        >
-          ← Surahs
-        </Link>
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-stone-800 mb-1">My Lists</h1>
+        <p className="text-sm text-stone-400">Words you've saved while reading.</p>
       </div>
 
       {lists.length === 0 ? (

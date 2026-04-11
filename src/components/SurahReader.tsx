@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { Surah, Word } from "@/types";
 import VerseRow from "./VerseRow";
 import WordBottomSheet from "./WordBottomSheet";
@@ -27,14 +26,6 @@ export default function SurahReader({ surah }: Props) {
     <div className="max-w-xl mx-auto px-4 pb-16">
       {/* Header */}
       <div className="sticky top-0 bg-[#FAFAF7] pt-4 pb-4 border-b border-stone-200 mb-2 z-10">
-        <div className="flex items-center justify-between mb-3">
-          <Link href="/" className="text-sm text-stone-400 hover:text-stone-600 transition-colors">
-            ← Surahs
-          </Link>
-          <Link href="/lists" className="text-sm text-stone-400 hover:text-amber-600 transition-colors">
-            My Lists →
-          </Link>
-        </div>
         <div className="text-center">
           <p className="text-xs uppercase tracking-widest text-stone-400 mb-1">
             Surah {surah.id}
