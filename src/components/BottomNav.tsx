@@ -49,7 +49,10 @@ export default function BottomNav() {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       {tabs.map(({ href, label, Icon }) => {
-        const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+        const isActive =
+          href === "/"
+            ? pathname === "/" || pathname.startsWith("/surah")
+            : pathname.startsWith(href);
         return (
           <Link
             key={href}
