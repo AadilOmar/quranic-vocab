@@ -52,10 +52,37 @@ function fetchMorphology(surahId: number): MorphMap {
 
 // ── Full surah ───────────────────────────────────────────────
 
-export async function fetchSurah(surahId: number): Promise<Surah> {
+async function fetchAyahTranslations(surahId: number, translationId: string): Promise<Record<number, string>> {
+  const map: Record<number, string> = {};
+
+  if (translationId === "khattab") {
+    const res = await fetch(
+      `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/eng-mustafakhattaba/${surahId}.json`,
+      { next: { revalidate: 86400 } }
+    );
+    if (!res.ok) return map;
+    const data = await res.json();
+    for (const entry of data.chapter ?? []) {
+      map[entry.verse] = entry.text;
+    }
+    return map;
+  }
+
+  const res = await fetch(`https://api.alquran.cloud/v1/surah/${surahId}/${translationId}`, {
+    next: { revalidate: 86400 },
+  });
+  if (!res.ok) return map;
+  const data = await res.json();
+  for (const ayah of data.data?.ayahs ?? []) {
+    map[ayah.numberInSurah] = ayah.text;
+  }
+  return map;
+}
+
+export async function fetchSurah(surahId: number, translationId = "en.sahih"): Promise<Surah> {
   const morphMap = fetchMorphology(surahId);
 
-  const [versesRes, translationRes] = await Promise.all([
+  const [versesRes, translationMap] = await Promise.all([
     fetch(
       `${API_BASE}/verses/by_chapter/${surahId}` +
         `?words=true` +
@@ -63,22 +90,11 @@ export async function fetchSurah(surahId: number): Promise<Surah> {
         `&per_page=300`,
       { next: { revalidate: 86400 } }
     ),
-    fetch(`https://api.alquran.cloud/v1/surah/${surahId}/en.sahih`, {
-      next: { revalidate: 86400 },
-    }),
+    fetchAyahTranslations(surahId, translationId),
   ]);
 
   if (!versesRes.ok) throw new Error(`Failed to fetch surah ${surahId}`);
   const versesData = await versesRes.json();
-
-  // Build a verse translation map: ayahNumber → translation text
-  const translationMap: Record<number, string> = {};
-  if (translationRes.ok) {
-    const translationData = await translationRes.json();
-    for (const ayah of translationData.data?.ayahs ?? []) {
-      translationMap[ayah.numberInSurah] = ayah.text;
-    }
-  }
 
   const chapterRes = await fetch(`${API_BASE}/chapters/${surahId}?language=en`, {
     next: { revalidate: 86400 },

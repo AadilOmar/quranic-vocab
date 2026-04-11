@@ -34,11 +34,12 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         } else {
           setSignupDone(true);
         }
+        setSubmitting(false);
       } else {
         const { error } = await signIn(email, password);
-        if (error) setError(error.message);
+        if (error) { setError(error.message); setSubmitting(false); }
+        else { window.location.href = "/"; }
       }
-      setSubmitting(false);
     };
 
     if (signupDone) {
