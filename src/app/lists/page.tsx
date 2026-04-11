@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useLists } from "@/hooks/useLists";
 
 export default function ListsPage() {
-  const { lists, deleteList } = useLists();
+  const { lists, loading, deleteList } = useLists();
 
   return (
     <div className="max-w-xl mx-auto px-4 py-10">
@@ -13,7 +13,13 @@ export default function ListsPage() {
         <p className="text-sm text-stone-400">Words you've saved while reading.</p>
       </div>
 
-      {lists.length === 0 ? (
+      {loading ? (
+        <div className="space-y-2">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-16 bg-stone-100 rounded-xl animate-pulse" />
+          ))}
+        </div>
+      ) : lists.length === 0 ? (
         <div className="text-center py-20">
           <p className="text-4xl mb-4">📖</p>
           <p className="text-stone-500 text-sm">No lists yet.</p>
