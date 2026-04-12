@@ -33,7 +33,7 @@ export function useLists() {
     supabase
       .from("lists")
       .select("id, name, created_at, list_items(id, lemma, root, meaning, arabic, source_word_id, added_at, status)")
-      .order("created_at")
+      .order("created_at", { ascending: false })
       .then(({ data }) => {
         type RawItem = { id: string; lemma: string; root: string | null; meaning: string; arabic: string; source_word_id: string; added_at: string; status: string };
         type RawList = { id: string; name: string; created_at: string; list_items: RawItem[] };
