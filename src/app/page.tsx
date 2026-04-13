@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { fetchChapters } from "@/lib/quran";
+import RecentlyRead from "@/components/RecentlyRead";
 
 export default async function Home() {
   const surahs = await fetchChapters();
@@ -10,6 +11,8 @@ export default async function Home() {
         <h1 className="text-2xl font-semibold text-stone-800 mb-1">Quran Vocabulary</h1>
         <p className="text-sm text-stone-400">Tap any word to learn its meaning and root, and save it to a flashcard list.</p>
       </div>
+
+      <RecentlyRead />
 
       <div className="space-y-2">
         {surahs.map((surah) => (

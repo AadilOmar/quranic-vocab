@@ -7,3 +7,11 @@
 .font-arabic {
   font-family: var(--active-arabic-font, var(--font-scheherazade)), serif;
 }
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
