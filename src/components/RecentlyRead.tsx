@@ -16,13 +16,9 @@ export default function RecentlyRead() {
           <Link
             key={entry.surahId}
             href={`/surah/${entry.surahId}`}
-            className="flex items-center gap-2 px-3 py-2 bg-white rounded-full border border-stone-100 shadow-sm hover:border-amber-200 transition-all shrink-0"
+            className="px-3 py-2 bg-white rounded-full border border-stone-100 shadow-sm hover:border-amber-200 transition-all shrink-0 text-sm font-medium text-stone-800 whitespace-nowrap"
           >
-            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-amber-50 text-amber-700 text-xs font-semibold border border-amber-200 shrink-0">
-              {entry.surahId}
-            </span>
-            <span className="text-sm font-medium text-stone-800">{entry.surahName}</span>
-            <span className="text-xs text-stone-400">{entry.lastVerse}</span>
+            {entry.surahName} {entry.surahId}:{entry.lastVerse}
           </Link>
         ))}
       </div>
