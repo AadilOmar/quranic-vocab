@@ -6,6 +6,7 @@ export default async function SurahPage({ params }: { params: Promise<{ id: stri
   const { id } = await params;
   const cookieStore = await cookies();
   const translationId = cookieStore.get("translation")?.value ?? "en.sahih";
-  const surah = await fetchSurah(Number(id), translationId);
+  const fontId = cookieStore.get("font")?.value ?? "scheherazade";
+  const surah = await fetchSurah(Number(id), translationId, fontId);
   return <SurahReader surah={surah} />;
 }

@@ -3,6 +3,7 @@
 import { use, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useLists, WordStatus, ListItem } from "@/hooks/useLists";
+import { useSettings } from "@/hooks/useSettings";
 import FlashCard from "@/components/FlashCard";
 
 type Filter = "learning" | "known" | "all";
@@ -20,6 +21,7 @@ function shuffle<T>(arr: T[]): T[] {
 export default function ListPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { lists, updateWordStatus, removeWordFromList } = useLists();
+  const { font } = useSettings();
   const [view, setView] = useState<View>("words");
   const [filter, setFilter] = useState<Filter>("learning");
   const [index, setIndex] = useState(0);
@@ -172,6 +174,7 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
             index={safeIndex}
             total={filteredItems.length}
             flipped={flipped}
+            font={font}
             onFlip={() => setFlipped((f) => !f)}
             onSwipeLeft={() => safeIndex === filteredItems.length - 1 ? reshuffleForFilter(filter) : handleNext()}
             onSwipeRight={handlePrev}

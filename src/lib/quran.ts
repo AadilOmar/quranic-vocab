@@ -4,6 +4,7 @@ import { Surah, Ayah, Word } from "@/types";
 
 const API_BASE = "https://api.quran.com/api/v4";
 
+
 export type ChapterInfo = {
   id: number;
   arabicName: string;
@@ -79,14 +80,18 @@ async function fetchAyahTranslations(surahId: number, translationId: string): Pr
   return map;
 }
 
-export async function fetchSurah(surahId: number, translationId = "en.sahih"): Promise<Surah> {
+const INDOPAK_FONTS = new Set(["noorehidayat", "noorehira", "noorehuda"]);
+
+export async function fetchSurah(surahId: number, translationId = "en.sahih", fontId = "scheherazade"): Promise<Surah> {
   const morphMap = fetchMorphology(surahId);
+  const isIndopak = INDOPAK_FONTS.has(fontId);
+  const wordTextField = isIndopak ? "text_indopak" : "text_uthmani";
 
   const [versesRes, translationMap] = await Promise.all([
     fetch(
       `${API_BASE}/verses/by_chapter/${surahId}` +
         `?words=true` +
-        `&word_fields=text_uthmani,transliteration,translation` +
+        `&word_fields=${wordTextField},transliteration,translation` +
         `&per_page=300`,
       { next: { revalidate: 86400 } }
     ),
@@ -108,7 +113,8 @@ export async function fetchSurah(surahId: number, translationId = "en.sahih"): P
       id: number;
       position: number;
       char_type_name: string;
-      text_uthmani: string;
+      text_uthmani?: string;
+      text_indopak?: string;
       translation: { text: string };
       transliteration: { text: string | null };
     }[];
@@ -121,12 +127,13 @@ export async function fetchSurah(surahId: number, translationId = "en.sahih"): P
       .map((w) => {
         const morphKey = `${ayahId}:${w.position}`;
         const morph = morphMap[morphKey];
+        const rawText = (isIndopak ? w.text_indopak : w.text_uthmani) ?? "";
         return {
           id: `${surahId}:${ayahId}:${w.position}`,
           surahId,
           ayahId,
           position: w.position,
-          arabic: w.text_uthmani,
+          arabic: rawText.trim(),
           transliteration: w.transliteration?.text ?? "",
           translation: w.translation?.text ?? "",
           lemma: morph?.lemma ?? "",

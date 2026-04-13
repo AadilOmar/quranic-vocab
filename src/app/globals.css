@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-arabic: var(--font-amiri);
+  --font-arabic: var(--active-arabic-font, var(--font-scheherazade));
 }
 
 .font-arabic {
-  font-family: var(--font-amiri), "Amiri", serif;
+  font-family: var(--active-arabic-font, var(--font-scheherazade)), serif;
 }

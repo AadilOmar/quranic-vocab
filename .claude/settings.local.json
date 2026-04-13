@@ -16,7 +16,21 @@
       "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); print\\(type\\(data\\)\\); print\\(len\\(data\\)\\); print\\(json.dumps\\(data[0], ensure_ascii=False, indent=2\\)\\)\")",
       "WebFetch(domain:quranmorphology.com)",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d, ensure_ascii=False, indent=2\\)\\)\")",
-      "Bash(node scripts/process-morphology.mjs)"
+      "Bash(node scripts/process-morphology.mjs)",
+      "Bash(node -e \"const d=JSON.parse\\(require\\(''''fs''''\\).readFileSync\\(0,''''utf8''''\\)\\); console.log\\(JSON.stringify\\(d.verses[0].translations, null, 2\\)\\)\")",
+      "Bash(node -e \"const d=JSON.parse\\(require\\(''''fs''''\\).readFileSync\\(0,''''utf8''''\\)\\); const v=d.verses[0]; console.log\\(''''keys:'''', Object.keys\\(v\\)\\); console.log\\(''''translations:'''', v.translations\\)\")",
+      "Bash(node -e \"const d=JSON.parse\\(require\\(''''fs''''\\).readFileSync\\(0,''''utf8''''\\)\\); console.log\\(JSON.stringify\\(d.verses[0], null, 2\\)\\)\")",
+      "Bash(node -e \"const d=JSON.parse\\(require\\(''''fs''''\\).readFileSync\\(0,''''utf8''''\\)\\); console.log\\(JSON.stringify\\(d.translations.slice\\(0,5\\), null, 2\\)\\)\")",
+      "Bash(node -e \"const d=JSON.parse\\(require\\(''''fs''''\\).readFileSync\\(0,''''utf8''''\\)\\); console.log\\(JSON.stringify\\(d.translations?.slice\\(0,3\\), null, 2\\)\\)\")",
+      "Bash(node -e \"const d=JSON.parse\\(require\\(''''fs''''\\).readFileSync\\(0,''''utf8''''\\)\\); console.log\\(JSON.stringify\\(d.data.ayahs.slice\\(0,2\\), null, 2\\)\\)\")",
+      "Bash(npx tsc:*)",
+      "WebFetch(domain:api.alquran.cloud)",
+      "WebFetch(domain:api.quran.com)",
+      "Bash(python3 -m json.tool)",
+      "WebFetch(domain:cdn.jsdelivr.net)",
+      "Bash(node -e \"const d=JSON.parse\\(require\\(''''fs''''\\).readFileSync\\(0,''''utf8''''\\)\\); const keys=Object.keys\\(d\\); console.log\\(''''keys:'''', keys.slice\\(0,5\\)\\); console.log\\(''''sample:'''', JSON.stringify\\(d[keys[0]]\\)\\)\")",
+      "Bash(node scripts/generate-lemma-counts.mjs)",
+      "Bash(node -e \"const d=JSON.parse\\(require\\(''fs''\\).readFileSync\\(''public/data/lemma-counts.json'',''utf8''\\)\\); const entries=Object.entries\\(d\\).sort\\(\\(a,b\\)=>b[1]-a[1]\\); console.log\\(''top 5:'', entries.slice\\(0,5\\)\\); console.log\\(''file size:'', require\\(''fs''\\).statSync\\(''public/data/lemma-counts.json''\\).size, ''bytes''\\)\")"
     ]
   }
 }

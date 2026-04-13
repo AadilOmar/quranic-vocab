@@ -19,22 +19,28 @@ type Props = {
   index: number;
   total: number;
   flipped: boolean;
+  font: string;
   onFlip: () => void;
   onSwipeLeft: () => void;
   onSwipeRight: () => void;
 };
 
-async function fetchSourceVerse(sourceWordId: string): Promise<SourceVerse | null> {
+const INDOPAK_FONTS = new Set(["noorehidayat", "noorehira", "noorehuda"]);
+
+async function fetchSourceVerse(sourceWordId: string, fontId: string): Promise<SourceVerse | null> {
   const parsed = parseSourceWordId(sourceWordId);
   if (!parsed) return null;
 
   const wordPosition = parseInt(sourceWordId.split(":")[2] ?? "1");
 
+  const isIndopak = INDOPAK_FONTS.has(fontId);
+  const wordTextField = isIndopak ? "text_indopak" : "text_uthmani";
+
   try {
     const [wordsRes, translationRes, chapterRes] = await Promise.all([
       fetch(
         `https://api.quran.com/api/v4/verses/by_key/${parsed.surahId}:${parsed.ayahId}` +
-          `?words=true&word_fields=text_uthmani`
+          `?words=true&word_fields=${wordTextField}`
       ),
       fetch(
         `https://api.alquran.cloud/v1/ayah/${parsed.surahId}:${parsed.ayahId}/en.sahih`
@@ -47,7 +53,9 @@ async function fetchSourceVerse(sourceWordId: string): Promise<SourceVerse | nul
 
     const allWords: string[] = wordsData.verse.words
       .filter((w: { char_type_name: string }) => w.char_type_name === "word")
-      .map((w: { text_uthmani: string }) => w.text_uthmani);
+      .map((w: { text_uthmani?: string; text_indopak?: string }) =>
+        ((isIndopak ? w.text_indopak : w.text_uthmani) ?? "").trim()
+      );
 
     let arabic: string;
     if (allWords.length <= 60) {
@@ -107,14 +115,14 @@ async function fetchSourceVerse(sourceWordId: string): Promise<SourceVerse | nul
   }
 }
 
-export default function FlashCard({ item, index, total, flipped, onFlip, onSwipeLeft, onSwipeRight }: Props) {
+export default function FlashCard({ item, index, total, flipped, font, onFlip, onSwipeLeft, onSwipeRight }: Props) {
   const [sourceVerse, setSourceVerse] = useState<SourceVerse | null>(null);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     setSourceVerse(null);
-    fetchSourceVerse(item.sourceWordId).then(setSourceVerse);
-  }, [item.sourceWordId]);
+    fetchSourceVerse(item.sourceWordId, font).then(setSourceVerse);
+  }, [item.sourceWordId, font]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     const t = e.touches[0];

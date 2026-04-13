@@ -1,11 +1,11 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { useSettings, TRANSLATIONS } from "@/hooks/useSettings";
+import { useSettings, TRANSLATIONS, FONTS } from "@/hooks/useSettings";
 
 export default function SettingsPage() {
   const { signOut, user } = useAuth();
-  const { translation, setTranslation, loading } = useSettings();
+  const { translation, setTranslation, font, setFont, loading } = useSettings();
 
   return (
     <div className="max-w-xl mx-auto px-4 py-10 pb-24">
@@ -33,6 +33,41 @@ export default function SettingsPage() {
               )}
             </button>
           ))}
+        </div>
+
+        <div className="bg-white rounded-xl border border-stone-100 shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-stone-100">
+            <p className="text-xs uppercase tracking-widest text-stone-400">Arabic Font</p>
+          </div>
+          {["Naskh", "Indopak", "Nastaliq"].map((category) => {
+            const categoryFonts = FONTS.filter((f) => f.category === category);
+            return (
+              <div key={category}>
+                <div className="px-4 py-2 bg-stone-50 border-b border-stone-100">
+                  <p className="text-xs font-medium text-stone-400">{category}</p>
+                </div>
+                {categoryFonts.map((f, i) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setFont(f.id)}
+                    className={`w-full flex items-center justify-between px-4 py-3.5 text-left transition-colors ${
+                      i < categoryFonts.length - 1 ? "border-b border-stone-100" : "border-b border-stone-100"
+                    } ${!loading && font === f.id ? "bg-amber-50" : "hover:bg-stone-50"}`}
+                  >
+                    <div>
+                      <span className={`text-sm ${!loading && font === f.id ? "font-semibold text-amber-700" : "text-stone-700"}`}>
+                        {f.name}
+                      </span>
+                      <span className="text-stone-400 text-base ml-3" style={{ fontFamily: `var(${f.cssVar})` }}>بِسْمِ ٱللَّهِ</span>
+                    </div>
+                    {!loading && font === f.id && (
+                      <span className="text-amber-500 text-sm">✓</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            );
+          })}
         </div>
 
         <div className="bg-white rounded-xl border border-stone-100 shadow-sm overflow-hidden">
