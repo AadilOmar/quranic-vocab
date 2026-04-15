@@ -129,12 +129,12 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
     return (
       <div className="flex flex-col max-w-xl mx-auto" style={{ height: "calc(100dvh - 4rem)" }}>
         {/* Header */}
-        <div className="px-4 pt-6 pb-3 shrink-0">
-          <div className="flex items-center justify-center mb-4">
-            <h1 className="text-base font-semibold text-stone-700">{list.name}</h1>
+        <div className="shrink-0 bg-white border-b border-stone-100">
+          <div className="relative px-4 h-16 flex items-center">
+            <button onClick={() => setView("words")} className="text-sm font-medium text-amber-600 z-10">← Back</button>
+            <span className="absolute inset-0 flex items-center justify-center text-base font-bold text-stone-900 pointer-events-none">{list.name}</span>
           </div>
-
-          <div className="flex justify-center">
+          <div className="flex justify-center px-4 pb-3">
             <div className="flex bg-stone-100 rounded-xl p-1 gap-1">
               <button
                 onClick={() => reshuffleForFilter("learning")}
@@ -233,19 +233,23 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
 
   // ── WORD LIST VIEW ─────────────────────────────────────────────
   return (
-    <div className="max-w-xl mx-auto px-4 py-8">
+    <div className="max-w-xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-center mb-4">
-        <h1 className="text-base font-semibold text-stone-700">{list.name}</h1>
+      <div className="sticky top-0 z-10 bg-white border-b border-stone-100">
+        <div className="relative px-4 h-16 flex items-center">
+          <Link href="/lists" className="text-sm font-medium text-amber-600 z-10">← Lists</Link>
+          <span className="absolute inset-0 flex items-center justify-center text-base font-bold text-stone-900 pointer-events-none">{list.name}</span>
+        </div>
       </div>
 
+      <div className="px-4 pt-6 pb-8">
       {/* Practice button — always visible */}
       <button
         onClick={() => startPractice()}
         disabled={list.items.length === 0}
         className="w-full py-3 mb-6 bg-amber-500 text-white font-semibold rounded-xl hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
-        Test Yourself →
+        Test Yourself
       </button>
 
       {list.items.length === 0 ? (
@@ -276,7 +280,7 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
                     <span className="text-xs text-amber-500 font-medium">Still learning</span>
                   )}
                 </div>
-                <p className="text-sm text-stone-500 mt-0.5">{item.meaning}</p>
+                <p className="text-sm text-stone-500 mt-2">{item.meaning}</p>
                 {item.root && (
                   <p className="text-xs text-stone-400 mt-0.5">
                     Root: <span className="font-arabic">{item.root}</span>
@@ -294,6 +298,7 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

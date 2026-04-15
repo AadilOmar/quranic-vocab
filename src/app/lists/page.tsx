@@ -7,12 +7,12 @@ export default function ListsPage() {
   const { lists, loading, deleteList } = useLists();
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-10">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-stone-800 mb-1">My Lists</h1>
-        <p className="text-sm text-stone-400">Words you've saved while reading.</p>
+    <div className="max-w-xl mx-auto">
+      <div className="sticky top-0 z-10 bg-white border-b border-stone-100 px-4 h-16 flex items-center">
+        <h1 className="text-lg font-bold text-stone-900 tracking-tight">My Lists</h1>
       </div>
 
+      <div className="px-4 pt-6 pb-24">
       {loading ? (
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
@@ -38,7 +38,7 @@ export default function ListsPage() {
           {lists.map((list) => (
             <div
               key={list.id}
-              className="flex items-center gap-3 p-4 bg-white rounded-xl border border-stone-100 shadow-sm"
+              className="flex items-center gap-3 p-4 bg-white rounded-xl border border-stone-100 shadow-sm hover:border-amber-200 hover:shadow-md transition-all"
             >
               <Link
                 href={`/lists/${list.id}`}
@@ -60,7 +60,6 @@ export default function ListsPage() {
                     )}
                   </p>
                 </div>
-                <span className="text-stone-300 text-lg">→</span>
               </Link>
               <button
                 onClick={() => {
@@ -74,6 +73,7 @@ export default function ListsPage() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

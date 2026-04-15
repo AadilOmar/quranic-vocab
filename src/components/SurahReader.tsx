@@ -72,11 +72,14 @@ export default function SurahReader({ surah }: Props) {
   return (
     <div className="max-w-xl mx-auto px-4 pb-16">
       {/* Header */}
-      <div className="sticky top-0 bg-[#FAFAF7] pt-4 pb-4 border-b border-stone-200 mb-2 z-10">
-        <div className="text-center">
-          <p className="text-xs uppercase tracking-widest text-stone-400 mb-1">
+      <div className="sticky top-0 bg-[#FAFAF7] border-b border-stone-200 mb-2 z-10">
+        <div className="relative flex items-center h-16">
+          <a href="/" className="text-sm font-medium text-amber-600 z-10">← Read</a>
+          <p className="absolute inset-0 flex items-center justify-center text-xs uppercase tracking-widest text-stone-400 pointer-events-none">
             Surah {surah.id}
           </p>
+        </div>
+        <div className="text-center pb-4">
           <h1 className="font-arabic text-4xl text-stone-800 mb-1">{surah.arabicName}</h1>
           <p className="text-sm text-stone-500">
             {surah.englishName} · {surah.meaning} · {surah.ayahCount} verses
