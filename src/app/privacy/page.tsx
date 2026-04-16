@@ -29,8 +29,7 @@ export default function PrivacyPage() {
   return (
     <main className="min-h-screen bg-[#FAFAF7]">
       {/* Header */}
-      <div className="bg-white border-b border-stone-100">
-        <div className="max-w-2xl mx-auto px-6 py-10">
+      <div className="max-w-2xl mx-auto px-6 py-10">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-9 h-9 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">
               <span className="text-white font-bold text-lg leading-none">Q</span>
@@ -42,7 +41,6 @@ export default function PrivacyPage() {
           <p className="mt-4 text-stone-600 leading-relaxed">
             This website is created to help users learn Quranic vocabulary. Your privacy is important to us.
           </p>
-        </div>
       </div>
 
       {/* Sections */}

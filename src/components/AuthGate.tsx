@@ -1,10 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import BottomNav from "@/components/BottomNav";
 
+const Footer = () => (
+  <footer className="text-center py-3">
+    <Link href="/privacy" className="text-xs text-stone-400 hover:text-amber-600 transition-colors">
+      Privacy Policy
+    </Link>
+  </footer>
+);
+
 export default function AuthGate({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const { user, loading, signIn, signUp, signOut, signInWithGoogle } = useAuth();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
@@ -12,6 +23,8 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [signupDone, setSignupDone] = useState(false);
+
+  if (pathname === "/privacy") return <>{children}</>;
 
   if (loading) {
     return (
@@ -123,13 +136,16 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
             </button>
           </p>
         </div>
+        <Footer />
       </div>
     );
   }
 
   return (
     <>
-      <div className="pb-16">{children}</div>
+      <div className="pb-16">
+        {children}
+      </div>
       <BottomNav />
     </>
   );
