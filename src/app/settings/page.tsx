@@ -1,24 +1,56 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useSettings, TRANSLATIONS, FONTS } from "@/hooks/useSettings";
 
 export default function SettingsPage() {
   const { signOut, user } = useAuth();
   const { translation, setTranslation, font, setFont, loading } = useSettings();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div className="max-w-xl mx-auto">
       <div className="sticky top-0 z-10 bg-white border-b border-stone-100 px-4 h-16 flex items-center justify-between">
         <h1 className="text-lg font-bold text-stone-900 tracking-tight">Settings</h1>
-        <span className="text-xs text-stone-400 truncate max-w-[180px]">{user?.email}</span>
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            className="flex items-center gap-1 text-xs text-stone-400 hover:text-stone-600 transition-colors"
+          >
+            <span className="truncate max-w-[160px]">{user?.email}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 transition-transform ${menuOpen ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-8 w-44 bg-white border border-stone-100 rounded-xl shadow-lg overflow-hidden z-20">
+              <button
+                onClick={() => { setMenuOpen(false); signOut(); }}
+                className="w-full px-4 py-3 text-left text-sm text-red-500 hover:bg-red-50 transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="px-4 pt-6 pb-24">
       <div className="space-y-4">
         <div className="bg-white rounded-xl border border-stone-100 shadow-sm overflow-hidden">
           <div className="px-4 py-3 border-b border-stone-100">
-            <p className="text-xs uppercase tracking-widest text-stone-400">Translation</p>
+            <p className="text-sm font-bold text-stone-900">Translation</p>
           </div>
           {TRANSLATIONS.map((t, i) => (
             <button
@@ -40,7 +72,7 @@ export default function SettingsPage() {
 
         <div className="bg-white rounded-xl border border-stone-100 shadow-sm overflow-hidden">
           <div className="px-4 py-3 border-b border-stone-100">
-            <p className="text-xs uppercase tracking-widest text-stone-400">Arabic Font</p>
+            <p className="text-sm font-bold text-stone-900">Arabic Font</p>
           </div>
           {["Naskh", "Indopak", "Nastaliq"].map((category) => {
             const categoryFonts = FONTS.filter((f) => f.category === category);
@@ -73,14 +105,6 @@ export default function SettingsPage() {
           })}
         </div>
 
-        <div className="bg-white rounded-xl border border-stone-100 shadow-sm overflow-hidden">
-          <button
-            onClick={signOut}
-            className="w-full px-4 py-4 text-left text-sm text-red-500 hover:bg-red-50 transition-colors"
-          >
-            Sign Out
-          </button>
-        </div>
       </div>
       </div>
     </div>
