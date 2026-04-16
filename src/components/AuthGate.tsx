@@ -6,13 +6,6 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import BottomNav from "@/components/BottomNav";
 
-const Footer = () => (
-  <footer className="text-center py-3">
-    <Link href="/privacy" className="text-xs text-stone-400 hover:text-amber-600 transition-colors">
-      Privacy Policy
-    </Link>
-  </footer>
-);
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -24,7 +17,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [submitting, setSubmitting] = useState(false);
   const [signupDone, setSignupDone] = useState(false);
 
-  if (pathname === "/privacy") return <>{children}</>;
+  if (pathname === "/privacy" || pathname === "/about") return <>{children}</>;
 
   if (loading) {
     return (
@@ -138,7 +131,10 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
             </button>
           </p>
         </div>
-        <Footer />
+        <div className="text-center mt-10 flex justify-center gap-4">
+          <Link href="/about" className="text-xs text-stone-400 hover:text-amber-600 transition-colors">About</Link>
+          <Link href="/privacy" className="text-xs text-stone-400 hover:text-amber-600 transition-colors">Privacy Policy</Link>
+        </div>
       </div>
     );
   }

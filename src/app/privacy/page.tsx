@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function PrivacyPage() {
   const sections = [
     {
@@ -28,23 +30,25 @@ export default function PrivacyPage() {
 
   return (
     <main className="min-h-screen bg-[#FAFAF7]">
-      {/* Header */}
-      <div className="max-w-2xl mx-auto px-6 py-10">
+      <div className="max-w-2xl mx-auto px-6 py-10 space-y-4">
+
+        {/* Header */}
+        <div className="bg-white rounded-2xl border border-stone-100 px-6 py-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-9 h-9 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">
-              <span className="text-white font-bold text-lg leading-none">Q</span>
+              <span className="font-arabic text-white text-lg leading-none">ق</span>
             </div>
             <span className="text-stone-400 text-sm">Quran Vocabulary</span>
           </div>
-          <h1 className="text-3xl font-bold text-stone-900">Privacy Policy</h1>
-          <p className="mt-2 text-sm text-stone-400">Last updated: April 15, 2026</p>
-          <p className="mt-4 text-stone-600 leading-relaxed">
+          <h1 className="text-2xl font-bold text-stone-900">Privacy Policy</h1>
+          <p className="mt-1 text-xs text-stone-400">Last updated: April 15, 2026</p>
+          <p className="mt-3 text-stone-500 text-sm leading-relaxed">
             This website is created to help users learn Quranic vocabulary. Your privacy is important to us.
           </p>
-      </div>
+        </div>
 
-      {/* Sections */}
-      <div className="max-w-2xl mx-auto px-6 py-8 space-y-4">
+        {/* Sections */}
+        <div className="space-y-4">
         {sections.map((section) => (
           <div key={section.title} className="bg-white rounded-2xl border border-stone-100 px-6 py-5">
             <h2 className="text-base font-semibold text-stone-800 mb-2">{section.title}</h2>
@@ -62,6 +66,11 @@ export default function PrivacyPage() {
             </a>
           </p>
         </div>
+        </div>
+
+        <Link href="/" className="block w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl text-center transition-colors">
+          Go to the App
+        </Link>
       </div>
     </main>
   );
