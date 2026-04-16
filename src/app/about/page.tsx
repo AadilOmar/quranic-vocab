@@ -71,6 +71,12 @@ export default function AboutPage() {
           Go to the App
         </Link>
 
+        <div className="text-center">
+          <Link href="/privacy" className="text-xs text-stone-400 hover:text-amber-600 transition-colors">
+            Privacy Policy
+          </Link>
+        </div>
+
 
       </div>
     </main>

@@ -71,6 +71,12 @@ export default function PrivacyPage() {
         <Link href="/" className="block w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl text-center transition-colors">
           Go to the App
         </Link>
+
+        <div className="text-center">
+          <Link href="/about" className="text-xs text-stone-400 hover:text-amber-600 transition-colors">
+            About
+          </Link>
+        </div>
       </div>
     </main>
   );
