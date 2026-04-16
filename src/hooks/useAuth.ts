@@ -31,5 +31,11 @@ export function useAuth() {
 
   const signOut = () => getSupabase().auth.signOut();
 
-  return { user, loading, signUp, signIn, signOut };
+  const signInWithGoogle = () =>
+    getSupabase().auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
+    });
+
+  return { user, loading, signUp, signIn, signOut, signInWithGoogle };
 }
