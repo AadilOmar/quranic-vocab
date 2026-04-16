@@ -77,7 +77,9 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       <div className="flex flex-col items-center justify-center min-h-screen px-6">
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
-            <p className="text-2xl mb-2">📖</p>
+            <div className="w-12 h-12 rounded-xl bg-amber-500 flex items-center justify-center mx-auto mb-3">
+              <span className="font-arabic text-white text-2xl leading-none">ق</span>
+            </div>
             <h1 className="text-xl font-semibold text-stone-800">Quran Vocabulary</h1>
             <p className="text-sm text-stone-400 mt-1">
               {mode === "signin" ? "Sign in to your account" : "Create an account"}
