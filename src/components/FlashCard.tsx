@@ -20,6 +20,8 @@ type Props = {
   total: number;
   flipped: boolean;
   font: string;
+  direction: "left" | "right";
+  liveStatus?: string;
   onFlip: () => void;
   onSwipeLeft: () => void;
   onSwipeRight: () => void;
@@ -84,7 +86,7 @@ async function fetchSourceVerse(sourceWordId: string, fontId: string): Promise<S
 
     let prevArabic: string | undefined;
     let prevTranslation: string | undefined;
-    if (allWords.length < 10 && parsed.ayahId > 1) {
+    if (allWords.length < 6 && parsed.ayahId > 1) {
       const [prevWordsRes, prevTranslationRes] = await Promise.all([
         fetch(
           `https://api.quran.com/api/v4/verses/by_key/${parsed.surahId}:${parsed.ayahId - 1}` +
@@ -115,7 +117,7 @@ async function fetchSourceVerse(sourceWordId: string, fontId: string): Promise<S
   }
 }
 
-export default function FlashCard({ item, index, total, flipped, font, onFlip, onSwipeLeft, onSwipeRight }: Props) {
+export default function FlashCard({ item, index, total, flipped, font, direction, liveStatus, onFlip, onSwipeLeft, onSwipeRight }: Props) {
   const [sourceVerse, setSourceVerse] = useState<SourceVerse | null>(null);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
 
@@ -141,63 +143,78 @@ export default function FlashCard({ item, index, total, flipped, font, onFlip, o
   };
 
   return (
-    <div className="flex flex-col w-full">
-      {/* Card */}
+    <div className={`flex flex-col w-full ${direction === "right" ? "slide-in-right" : "slide-in-left"}`}>
+      {/* Flip card container */}
       <div
         onClick={onFlip}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="w-full bg-white rounded-2xl border border-stone-100 shadow-md cursor-pointer select-none transition-all duration-200 active:scale-[0.98]"
+        className="w-full cursor-pointer select-none"
+        style={{ perspective: "1000px" }}
       >
-        {!flipped ? (
-          <div className="relative flex items-center justify-center h-56 px-6">
-            {item.status === "known" && (
+        <div
+          style={{
+            transformStyle: "preserve-3d",
+            transition: "transform 0.4s ease",
+            transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
+            position: "relative",
+            height: "224px",
+          }}
+        >
+          {/* Front */}
+          <div
+            className="absolute inset-0 bg-white rounded-2xl border border-stone-100 shadow-md flex items-center justify-center px-6"
+            style={{ backfaceVisibility: "hidden" }}
+          >
+            {(liveStatus ?? item.status) === "known" && (
               <span className="absolute top-3 right-3 text-xs text-green-500 uppercase tracking-widest">✓ Known</span>
             )}
             <p className="font-arabic text-5xl text-stone-800 leading-tight">{item.arabic}</p>
           </div>
-        ) : (
-          <div className="flex flex-col px-6 pb-6">
-            {/* Meaning — same height as Arabic front */}
-            <div className="flex items-center justify-center h-56 text-center px-2">
-              <p className="text-3xl font-semibold text-stone-700">{item.meaning}</p>
-            </div>
 
-            {sourceVerse && (
-              <>
-                <div className="bg-amber-50 rounded-xl px-4 py-3">
-                  <p className="text-xs uppercase tracking-widest text-amber-600 mb-2">
-                    {sourceVerse.surahName} {sourceVerse.surahId}:{sourceVerse.ayahId}
-                  </p>
-                  {sourceVerse.prevArabic && (
-                    <p dir="rtl" className="font-arabic text-base text-stone-400 leading-loose mb-1 text-right">
-                      {sourceVerse.prevArabic}
-                    </p>
-                  )}
-                  <p dir="rtl" className="font-arabic text-lg text-stone-700 leading-loose mb-2 text-right">
-                    {sourceVerse.arabic.split(" ").map((token, i) => {
-                      const strip = (s: string) => s.replace(/[\u0610-\u061A\u064B-\u065F]/g, "");
-                      const isMatch = strip(token) === strip(item.arabic);
-                      return (
-                        <span key={i}>
-                          {i > 0 && " "}
-                          {isMatch
-                            ? <span className="bg-amber-200 text-amber-900 rounded px-0.5 font-bold">{token}</span>
-                            : token}
-                        </span>
-                      );
-                    })}
-                  </p>
-                  {sourceVerse.prevTranslation && (
-                    <p className="text-xs text-stone-400 leading-relaxed mb-1 italic">{sourceVerse.prevTranslation}</p>
-                  )}
-                  <p className="text-xs text-stone-500 leading-relaxed">{sourceVerse.translation}</p>
-                </div>
-              </>
-            )}
+          {/* Back */}
+          <div
+            className="absolute inset-0 bg-white rounded-2xl border border-stone-100 shadow-md flex items-center justify-center px-6"
+            style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+          >
+            <p className="text-3xl font-semibold text-stone-700 text-center">{item.meaning}</p>
           </div>
-        )}
+        </div>
       </div>
+
+      {/* Verse context — below card, only when flipped */}
+      {flipped && sourceVerse && (
+        <div className="mt-3">
+          <div className="bg-amber-50 rounded-xl px-4 py-3">
+            <p className="text-xs uppercase tracking-widest text-amber-600 mb-2">
+              {sourceVerse.surahName} {sourceVerse.surahId}:{sourceVerse.ayahId}
+            </p>
+            {sourceVerse.prevArabic && (
+              <p dir="rtl" className="font-arabic text-base text-stone-400 leading-loose mb-1 text-right">
+                {sourceVerse.prevArabic}
+              </p>
+            )}
+            <p dir="rtl" className="font-arabic text-lg text-stone-700 leading-loose mb-2 text-right">
+              {sourceVerse.arabic.split(" ").map((token, i) => {
+                const strip = (s: string) => s.replace(/[\u0610-\u061A\u064B-\u065F]/g, "");
+                const isMatch = strip(token) === strip(item.arabic);
+                return (
+                  <span key={i}>
+                    {i > 0 && " "}
+                    {isMatch
+                      ? <span className="bg-amber-200 text-amber-900 rounded px-0.5 font-bold">{token}</span>
+                      : token}
+                  </span>
+                );
+              })}
+            </p>
+            {sourceVerse.prevTranslation && (
+              <p className="text-xs text-stone-400 leading-relaxed mb-1 italic">{sourceVerse.prevTranslation}</p>
+            )}
+            <p className="text-xs text-stone-500 leading-relaxed">{sourceVerse.translation}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -108,24 +108,22 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
             {/* ── DETAIL VIEW ── */}
             {view === "detail" && (
               <>
-                <div className="flex items-start justify-between mb-5">
-                  <div className="flex-1 text-center">
-                    <p className="font-arabic text-5xl text-stone-800 leading-tight mb-2">
-                      {word.arabic}
-                    </p>
-                    <p className="text-lg font-medium text-stone-700">
-                      {word.translation}
-                    </p>
-                    <p className="text-sm text-stone-400 mt-0.5">
-                      {word.transliteration}
-                    </p>
-                  </div>
+                <div className="relative text-center mb-5">
                   <button
                     onClick={onClose}
-                    className="ml-4 mt-1 text-stone-300 hover:text-stone-500 text-2xl leading-none"
+                    className="absolute right-0 top-0 text-stone-300 hover:text-stone-500 text-2xl leading-none"
                   >
                     ×
                   </button>
+                  <p className="font-arabic text-5xl text-stone-800 leading-tight mb-2">
+                    {word.arabic}
+                  </p>
+                  <p className="text-lg font-medium text-stone-700">
+                    {word.translation}
+                  </p>
+                  <p className="text-sm text-stone-400 mt-0.5">
+                    {word.transliteration}
+                  </p>
                 </div>
 
                 <div className="border-t border-stone-100 mb-5" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useMemo, useCallback } from "react";
+import { use, useState, useMemo, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useLists, WordStatus, ListItem } from "@/hooks/useLists";
 import { useSettings } from "@/hooks/useSettings";
@@ -27,6 +27,8 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [shuffledItems, setShuffledItems] = useState<ListItem[]>([]);
+  const directionRef = useRef<"left" | "right">("right");
+  const [pendingStatus, setPendingStatus] = useState<WordStatus | null>(null);
 
   const list = lists.find((l) => l.id === id);
 
@@ -63,21 +65,30 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
   }, [list]);
 
   const safeIndex = Math.min(index, Math.max(0, filteredItems.length - 1));
+  const liveStatus = list?.items.find(i => i.id === filteredItems[safeIndex]?.id)?.status;
   const knownCount = list?.items.filter((i) => i.status === "known").length ?? 0;
   const learningCount = list?.items.filter((i) => i.status !== "known").length ?? 0;
 
   const handleStatusChange = (status: WordStatus) => {
     if (!list || !filteredItems[safeIndex]) return;
     updateWordStatus(list.id, filteredItems[safeIndex].id, status);
-    setFlipped(false);
+    setPendingStatus(status);
+    setTimeout(() => {
+      setPendingStatus(null);
+      directionRef.current = "right";
+      setIndex((i) => Math.min(i + 1, filteredItems.length - 1));
+      setFlipped(false);
+    }, 400);
   };
 
   const handleNext = () => {
+    directionRef.current = "right";
     setFlipped(false);
     setTimeout(() => setIndex((i) => Math.min(i + 1, filteredItems.length - 1)), 150);
   };
 
   const handlePrev = () => {
+    directionRef.current = "left";
     setFlipped(false);
     setTimeout(() => setIndex((i) => Math.max(i - 1, 0)), 150);
   };
@@ -168,16 +179,19 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
         </div>
 
         {/* Card */}
-        <div className="flex-1 overflow-y-auto px-4 py-2">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-2">
           <FlashCard
+            key={safeIndex}
             item={filteredItems[safeIndex]}
             index={safeIndex}
             total={filteredItems.length}
             flipped={flipped}
             font={font}
+            direction={directionRef.current}
+            liveStatus={liveStatus}
             onFlip={() => setFlipped((f) => !f)}
-            onSwipeLeft={() => safeIndex === filteredItems.length - 1 ? reshuffleForFilter(filter) : handleNext()}
-            onSwipeRight={handlePrev}
+            onSwipeLeft={() => { directionRef.current = "right"; safeIndex === filteredItems.length - 1 ? reshuffleForFilter(filter) : handleNext(); }}
+            onSwipeRight={() => { directionRef.current = "left"; handlePrev(); }}
           />
         </div>
 
@@ -186,14 +200,18 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
           {flipped && (
             <div className="flex gap-3">
               <button
-                onClick={() => handleStatusChange("learning")}
-                className="flex-1 py-3 rounded-xl border-2 border-amber-200 text-amber-700 text-sm font-semibold hover:bg-amber-50 transition-colors"
+                onClick={(e) => { e.stopPropagation(); handleStatusChange("learning"); }}
+                className={`flex-1 py-3 rounded-xl border-2 border-stone-200 text-sm font-semibold transition-colors text-stone-900 ${
+                  pendingStatus === "learning" || liveStatus === "learning" ? "bg-amber-400" : "bg-transparent hover:bg-stone-50"
+                }`}
               >
                 Still Learning
               </button>
               <button
-                onClick={() => handleStatusChange("known")}
-                className="flex-1 py-3 rounded-xl border-2 border-green-200 text-green-700 text-sm font-semibold hover:bg-green-50 transition-colors"
+                onClick={(e) => { e.stopPropagation(); handleStatusChange("known"); }}
+                className={`flex-1 py-3 rounded-xl border-2 border-stone-200 text-sm font-semibold transition-colors text-stone-900 ${
+                  pendingStatus === "known" || liveStatus === "known" ? "bg-green-500" : "bg-transparent hover:bg-stone-50"
+                }`}
               >
                 Know It
               </button>
@@ -275,9 +293,6 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
                   <span className="font-arabic text-2xl text-stone-800">{item.arabic}</span>
                   {item.status === "known" && (
                     <span className="text-xs text-green-500 font-medium">✓ Known</span>
-                  )}
-                  {item.status === "learning" && (
-                    <span className="text-xs text-amber-500 font-medium">Still learning</span>
                   )}
                 </div>
                 <p className="text-sm text-stone-500 mt-2">{item.meaning}</p>
