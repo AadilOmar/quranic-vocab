@@ -105,38 +105,6 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
 
   // ── PRACTICE VIEW ─────────────────────────────────────────────
   if (view === "practice") {
-    if (filteredItems.length === 0) {
-      return (
-        <div className="flex flex-col items-center justify-center min-h-screen gap-3 px-4">
-          <p className="text-4xl mb-2">🎉</p>
-          <p className="text-stone-700 font-semibold text-lg">
-            {filter === "learning" ? "All words known!" : "No words here yet."}
-          </p>
-          <p className="text-stone-400 text-sm">
-            {filter === "learning"
-              ? `You've marked all ${knownCount} words as known.`
-              : filter === "known"
-              ? "Mark words as known while practicing to see them here."
-              : "Add words to this list to get started."}
-          </p>
-          <div className="flex gap-3 mt-4">
-            <button
-              onClick={() => reshuffleForFilter("all")}
-              className="px-5 py-2.5 bg-amber-500 text-white text-sm font-semibold rounded-xl hover:bg-amber-600 transition-colors"
-            >
-              Review All Words
-            </button>
-            <button
-              onClick={() => setView("words")}
-              className="px-5 py-2.5 border border-stone-200 text-stone-600 text-sm font-medium rounded-xl hover:bg-stone-50 transition-colors"
-            >
-              Back to List
-            </button>
-          </div>
-        </div>
-      );
-    }
-
     return (
       <div className="flex flex-col max-w-xl mx-auto" style={{ height: "calc(100dvh - 4rem)" }}>
         {/* Header */}
@@ -180,6 +148,16 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
 
         {/* Card */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-2">
+          {filteredItems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full gap-2 text-center">
+              <p className="text-stone-500 font-medium">
+                {filter === "learning" ? "No words still learning." : filter === "known" ? "No known words yet." : "No words in this list."}
+              </p>
+              <p className="text-stone-400 text-sm">
+                {filter === "learning" ? "You've marked everything as known." : filter === "known" ? "Mark words as known while practicing to see them here." : "Add words while reading to get started."}
+              </p>
+            </div>
+          ) : (
           <FlashCard
             key={safeIndex}
             item={filteredItems[safeIndex]}
@@ -193,10 +171,11 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
             onSwipeLeft={() => { directionRef.current = "right"; safeIndex === filteredItems.length - 1 ? reshuffleForFilter(filter) : handleNext(); }}
             onSwipeRight={() => { directionRef.current = "left"; handlePrev(); }}
           />
+          )}
         </div>
 
         {/* Pinned buttons */}
-        <div className="shrink-0 px-4 pt-3 pb-6 bg-[#FAFAF7] border-t border-stone-100 space-y-2">
+        {filteredItems.length > 0 && <div className="shrink-0 px-4 pt-3 pb-6 bg-[#FAFAF7] border-t border-stone-100 space-y-2">
           {flipped && (
             <div className="flex gap-3">
               <button
@@ -244,7 +223,7 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
               </button>
             )}
           </div>
-        </div>
+        </div>}
       </div>
     );
   }

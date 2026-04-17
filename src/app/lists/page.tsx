@@ -1,10 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useLists } from "@/hooks/useLists";
 
 export default function ListsPage() {
   const { lists, loading, deleteList } = useLists();
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+
+  const confirmList = lists.find((l) => l.id === confirmId);
 
   return (
     <div className="max-w-xl mx-auto">
@@ -62,9 +66,7 @@ export default function ListsPage() {
                 </div>
               </Link>
               <button
-                onClick={() => {
-                  if (confirm(`Delete "${list.name}"?`)) deleteList(list.id);
-                }}
+                onClick={() => setConfirmId(list.id)}
                 className="text-stone-300 hover:text-red-400 transition-colors text-sm px-2"
               >
                 ✕
@@ -74,6 +76,33 @@ export default function ListsPage() {
         </div>
       )}
       </div>
+
+      {/* Delete confirmation modal */}
+      {confirmId && confirmList && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-black/30" onClick={() => setConfirmId(null)}>
+          <div className="w-full max-w-sm bg-white rounded-2xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 pt-6 pb-4">
+              <p className="text-base font-semibold text-stone-900">Delete &ldquo;{confirmList.name}&rdquo;?</p>
+              <p className="text-sm text-stone-400 mt-1">This will permanently remove the list and all its words.</p>
+            </div>
+            <div className="flex border-t border-stone-100">
+              <button
+                onClick={() => setConfirmId(null)}
+                className="flex-1 py-4 text-sm font-medium text-stone-500 hover:bg-stone-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <div className="w-px bg-stone-100" />
+              <button
+                onClick={() => { deleteList(confirmId); setConfirmId(null); }}
+                className="flex-1 py-4 text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
