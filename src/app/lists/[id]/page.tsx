@@ -84,13 +84,13 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
   const handleNext = () => {
     directionRef.current = "right";
     setFlipped(false);
-    setTimeout(() => setIndex((i) => Math.min(i + 1, filteredItems.length - 1)), 150);
+    setIndex((i) => Math.min(i + 1, filteredItems.length - 1));
   };
 
   const handlePrev = () => {
     directionRef.current = "left";
     setFlipped(false);
-    setTimeout(() => setIndex((i) => Math.max(i - 1, 0)), 150);
+    setIndex((i) => Math.max(i - 1, 0));
   };
 
 
@@ -202,7 +202,7 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
               <button
                 onClick={(e) => { e.stopPropagation(); handleStatusChange("learning"); }}
                 className={`flex-1 py-3 rounded-xl border-2 border-stone-200 text-sm font-semibold transition-colors text-stone-900 ${
-                  pendingStatus === "learning" || liveStatus === "learning" ? "bg-amber-400" : "bg-transparent hover:bg-stone-50"
+                  (pendingStatus ?? liveStatus) === "learning" ? "bg-amber-400" : "bg-transparent hover:bg-stone-50"
                 }`}
               >
                 Still Learning
@@ -210,7 +210,7 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
               <button
                 onClick={(e) => { e.stopPropagation(); handleStatusChange("known"); }}
                 className={`flex-1 py-3 rounded-xl border-2 border-stone-200 text-sm font-semibold transition-colors text-stone-900 ${
-                  pendingStatus === "known" || liveStatus === "known" ? "bg-green-500" : "bg-transparent hover:bg-stone-50"
+                  (pendingStatus ?? liveStatus) === "known" ? "bg-green-500" : "bg-transparent hover:bg-stone-50"
                 }`}
               >
                 Know It

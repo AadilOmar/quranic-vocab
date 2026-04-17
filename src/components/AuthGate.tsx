@@ -1,15 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import { applyFont, getFontCookie, FONTS, DEFAULT_FONT } from "@/hooks/useSettings";
 import BottomNav from "@/components/BottomNav";
 
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, loading, signIn, signUp, signOut, signInWithGoogle } = useAuth();
+
+  useEffect(() => {
+    const cached = getFontCookie();
+    if (cached) applyFont(cached);
+  }, []);
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

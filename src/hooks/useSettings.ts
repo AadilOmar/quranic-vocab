@@ -34,9 +34,15 @@ function syncFontCookie(id: string) {
   document.cookie = `font=${id}; path=/; max-age=${60 * 60 * 24 * 365}`;
 }
 
-function applyFont(fontId: string) {
+export function applyFont(fontId: string) {
   const font = FONTS.find((f) => f.id === fontId) ?? FONTS[0];
   document.documentElement.style.setProperty("--active-arabic-font", `var(${font.cssVar})`);
+}
+
+export function getFontCookie(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/(?:^|; )font=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : null;
 }
 
 export function useSettings() {

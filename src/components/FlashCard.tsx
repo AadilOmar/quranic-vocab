@@ -8,7 +8,8 @@ type SourceVerse = {
   surahId: number;
   surahName: string;
   ayahId: number;
-  arabic: string;
+  words: string[];
+  highlightIndex: number;
   translation: string;
   prevArabic?: string;
   prevTranslation?: string;
@@ -59,17 +60,21 @@ async function fetchSourceVerse(sourceWordId: string, fontId: string): Promise<S
         ((isIndopak ? w.text_indopak : w.text_uthmani) ?? "").trim()
       );
 
-    let arabic: string;
+    let words: string[];
+    let highlightIndex: number;
     if (allWords.length <= 60) {
-      arabic = allWords.join(" ");
+      words = allWords;
+      highlightIndex = wordPosition - 1;
     } else {
       const idx = wordPosition - 1;
       let start = Math.max(0, idx - 29);
       let end = Math.min(allWords.length - 1, start + 59);
       start = Math.max(0, end - 59);
-      arabic = allWords.slice(start, end + 1).join(" ");
-      if (start > 0) arabic = "…" + arabic;
-      if (end < allWords.length - 1) arabic = arabic + "…";
+      words = allWords.slice(start, end + 1);
+      highlightIndex = idx - start;
+      if (start > 0) words = ["…", ...words];
+      if (end < allWords.length - 1) words = [...words, "…"];
+      if (start > 0) highlightIndex += 1; // offset for leading ellipsis
     }
 
     let translation = "";
@@ -111,7 +116,7 @@ async function fetchSourceVerse(sourceWordId: string, fontId: string): Promise<S
       }
     }
 
-    return { surahId: parsed.surahId, surahName, ayahId: parsed.ayahId, arabic, translation, prevArabic, prevTranslation };
+    return { surahId: parsed.surahId, surahName, ayahId: parsed.ayahId, words, highlightIndex, translation, prevArabic, prevTranslation };
   } catch {
     return null;
   }
@@ -195,18 +200,14 @@ export default function FlashCard({ item, index, total, flipped, font, direction
               </p>
             )}
             <p dir="rtl" className="font-arabic text-lg text-stone-700 leading-loose mb-2 text-right">
-              {sourceVerse.arabic.split(" ").map((token, i) => {
-                const strip = (s: string) => s.replace(/[\u0610-\u061A\u064B-\u065F]/g, "");
-                const isMatch = strip(token) === strip(item.arabic);
-                return (
-                  <span key={i}>
-                    {i > 0 && " "}
-                    {isMatch
-                      ? <span className="bg-amber-200 text-amber-900 rounded px-0.5 font-bold">{token}</span>
-                      : token}
-                  </span>
-                );
-              })}
+              {sourceVerse.words.map((token, i) => (
+                <span key={i}>
+                  {i > 0 && " "}
+                  {i === sourceVerse.highlightIndex
+                    ? <span className="bg-amber-200 text-amber-900 rounded px-0.5 font-bold">{token}</span>
+                    : token}
+                </span>
+              ))}
             </p>
             {sourceVerse.prevTranslation && (
               <p className="text-xs text-stone-400 leading-relaxed mb-1 italic">{sourceVerse.prevTranslation}</p>
