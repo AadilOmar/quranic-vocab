@@ -20,10 +20,7 @@ export default function AboutPage() {
         <div className="bg-white rounded-2xl border border-stone-100 px-6 py-6 mb-4">
           <h2 className="text-sm font-semibold text-amber-600 uppercase tracking-wide mb-3">Mission</h2>
           <p className="text-stone-700 leading-relaxed">
-            Most Muslims recite the Quran without understanding what they&apos;re saying. Quran Vocabulary is built to change that - one word at a time.
-          </p>
-          <p className="text-stone-500 text-sm leading-relaxed mt-3">
-            Built for anyone studying the Quran. Pick words as you read, save them to lists, and test yourself with Quizlet-style flashcards.
+            Built for anyone wanting to build a deeper connection with the Quran. Pick words as you read, save them to lists, and test yourself with Quizlet-style flashcards.
           </p>
         </div>
 
@@ -39,13 +36,13 @@ export default function AboutPage() {
               },
               {
                 step: "2",
-                title: "Learn in context",
-                desc: "Words are shown inside their actual verse, so you learn vocabulary the way it's used, not in isolation.",
+                title: "Save words as you go",
+                desc: "Tap any word to see its meaning and add it to a custom list, curated by you.",
               },
               {
                 step: "3",
-                title: "Track what you know",
-                desc: "Mark words as known as you go. Build vocabulary lists and review with flashcards.",
+                title: "Learn in context",
+                desc: "Test yourself with flashcards and see each word inside the verse it came from - so you learn vocabulary the way it's used.",
               },
               {
                 step: "4",

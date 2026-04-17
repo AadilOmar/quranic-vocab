@@ -24,7 +24,7 @@ export default function PrivacyPage() {
     },
     {
       title: "Security",
-      body: "We take reasonable steps to protect your data, but no method is 100% secure.",
+      body: "We take reasonable steps to protect your data. Access to your account is protected by secure authentication, and your personal data is not accessible to other users.",
     },
   ];
 
@@ -60,7 +60,7 @@ export default function PrivacyPage() {
         <div className="bg-amber-50 rounded-2xl border border-amber-100 px-6 py-5">
           <h2 className="text-base font-semibold text-stone-800 mb-2">Contact</h2>
           <p className="text-stone-500 text-sm">
-            Questions? Reach us at{" "}
+            Questions, feedback, or feature requests? Reach us at{" "}
             <a href="mailto:aadilomar1@gmail.com" className="text-amber-600 hover:underline">
               aadilomar1@gmail.com
             </a>
