@@ -16,7 +16,7 @@ type Stats = {
   new_users_7d: { day: string; count: number }[] | null;
   new_words_7d: { day: string; count: number }[] | null;
   top_words: { arabic: string; meaning: string; saves: number }[] | null;
-  top_users_7d: { email: string; words_saved: number }[] | null;
+  top_users_7d: { user_id: string; words_saved: number }[] | null;
 };
 
 function StatCard({ label, value }: { label: string; value: number | string }) {
@@ -131,7 +131,7 @@ export default function DashboardPage() {
             {stats.top_users_7d.map((u, i) => (
               <div key={i} className="flex items-center gap-3">
                 <span className="text-xs text-stone-300 w-4 text-right">{i + 1}</span>
-                <span className="text-sm text-stone-600 flex-1">{u.email}</span>
+                <span className="text-sm text-stone-400 flex-1 font-mono truncate">{u.user_id}</span>
                 <span className="text-xs font-semibold text-amber-600">{u.words_saved} words</span>
               </div>
             ))}
