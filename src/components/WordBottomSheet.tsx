@@ -241,7 +241,7 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
       <div
         ref={sheetRef}
         className={`fixed bottom-16 left-0 right-0 z-40 bg-white rounded-t-2xl shadow-2xl
-          transition-transform duration-300 ease-out max-h-[70vh] overflow-y-auto
+          transition-transform duration-300 ease-out overflow-y-auto
           ${isOpen ? "translate-y-0" : "translate-y-full"}`}
       >
         {/* Drag handle */}
@@ -250,11 +250,11 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
         </div>
 
         {word && (
-          <div className="px-5 pb-10 pt-6 max-w-xl mx-auto">
+          <div className="px-5 pb-10 pt-6 max-w-xl mx-auto flex flex-col h-[420px]">
 
             {/* ── DETAIL VIEW ── */}
             {view === "detail" && (
-              <>
+              <div className="flex flex-col flex-1">
                 <div className="relative mb-1">
                   <button
                     onClick={onClose}
@@ -364,6 +364,7 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
                 </div>{/* end card area */}
 
                 {/* Add to list button — outside card */}
+                <div className="mt-auto">
                 {savedFeedback ? (
                   <div className="w-full py-3 rounded-xl bg-green-50 text-green-700 text-sm font-medium text-center">
                     ✓ Saved to list
@@ -383,12 +384,13 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
                     Add to List
                   </button>
                 )}
-              </>
+                </div>
+              </div>
             )}
 
             {/* ── PICK LIST VIEW ── */}
             {view === "pick-list" && (
-              <>
+              <div className="flex flex-col flex-1 min-h-0">
                 <div className="flex items-center gap-3 mb-5">
                   <button onClick={() => setView("detail")} className="text-stone-400 hover:text-stone-600">
                     ←
@@ -396,7 +398,7 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
                   <h2 className="text-base font-semibold text-stone-700">Save to list</h2>
                 </div>
 
-                <div className="space-y-2 mb-4">
+                <div className="space-y-2 mb-4 flex-1 min-h-0 overflow-y-auto">
                   {lists.length === 0 && (
                     <p className="text-sm text-stone-400 text-center py-4">
                       No lists yet. Create one below.
@@ -416,11 +418,11 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
 
                 <button
                   onClick={() => setView("new-list")}
-                  className="w-full py-3 rounded-xl border border-dashed border-stone-300 text-stone-500 text-sm hover:border-amber-300 hover:text-amber-600 transition-colors"
+                  className="mt-auto w-full py-3 rounded-xl border border-dashed border-stone-300 text-stone-500 text-sm hover:border-amber-300 hover:text-amber-600 transition-colors"
                 >
                   + New list
                 </button>
-              </>
+              </div>
             )}
 
             {/* ── NEW LIST VIEW ── */}

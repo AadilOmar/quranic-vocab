@@ -5,15 +5,23 @@ import Link from "next/link";
 import { useLists } from "@/hooks/useLists";
 
 export default function ListsPage() {
-  const { lists, loading, deleteList } = useLists();
+  const { lists, loading, deleteList, createList } = useLists();
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [showNewList, setShowNewList] = useState(false);
+  const [newListName, setNewListName] = useState("");
 
   const confirmList = lists.find((l) => l.id === confirmId);
 
   return (
     <div className="max-w-xl mx-auto">
-      <div className="sticky top-0 z-10 bg-white border-b border-stone-100 px-4 h-16 flex items-center">
+      <div className="sticky top-0 z-10 bg-white border-b border-stone-100 px-4 h-16 flex items-center justify-between">
         <h1 className="text-lg font-bold text-stone-900 tracking-tight">My Lists</h1>
+        <button
+          onClick={() => { setNewListName(""); setShowNewList(true); }}
+          className="text-amber-600 font-semibold text-sm hover:text-amber-700 transition-colors"
+        >
+          + New List
+        </button>
       </div>
 
       <div className="px-4 pt-6 pb-24">
@@ -76,6 +84,47 @@ export default function ListsPage() {
         </div>
       )}
       </div>
+
+      {/* New list modal */}
+      {showNewList && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-black/30" onClick={() => setShowNewList(false)}>
+          <div className="w-full max-w-sm bg-white rounded-2xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 pt-6 pb-4">
+              <p className="text-base font-semibold text-stone-900 mb-4">New List</p>
+              <input
+                type="text"
+                value={newListName}
+                onChange={(e) => setNewListName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newListName.trim()) {
+                    createList(newListName.trim());
+                    setShowNewList(false);
+                  }
+                }}
+                placeholder="e.g. Baqarah words"
+                autoFocus
+                className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm text-stone-700 placeholder-stone-300 focus:outline-none focus:border-amber-400"
+              />
+            </div>
+            <div className="flex border-t border-stone-100">
+              <button
+                onClick={() => setShowNewList(false)}
+                className="flex-1 py-4 text-sm font-medium text-stone-500 hover:bg-stone-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <div className="w-px bg-stone-100" />
+              <button
+                onClick={() => { if (newListName.trim()) { createList(newListName.trim()); setShowNewList(false); } }}
+                disabled={!newListName.trim()}
+                className="flex-1 py-4 text-sm font-semibold text-amber-600 hover:bg-amber-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete confirmation modal */}
       {confirmId && confirmList && (
