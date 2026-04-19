@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Word } from "@/types";
 import { SavedList, ListItem } from "@/hooks/useLists";
 
@@ -12,6 +12,14 @@ async function getLemmaCounts(): Promise<Record<string, number>> {
   return lemmaCounts!;
 }
 
+let rootCounts: Record<string, number> | null = null;
+async function getRootCounts(): Promise<Record<string, number>> {
+  if (rootCounts) return rootCounts;
+  const res = await fetch("/data/root-counts.json");
+  rootCounts = await res.json();
+  return rootCounts!;
+}
+
 type Props = {
   word: Word | null;
   onClose: () => void;
@@ -19,25 +27,59 @@ type Props = {
   createList: (name: string) => Promise<SavedList>;
   addWordToList: (listId: string, item: Omit<ListItem, "id" | "addedAt" | "status">) => void;
   isWordSaved: (lemma: string) => boolean;
+  onPrev?: () => void;
+  onNext?: () => void;
+  prevWord?: Word;
+  nextWord?: Word;
 };
 
 type SheetView = "detail" | "pick-list" | "new-list";
 
-export default function WordBottomSheet({ word, onClose, lists, createList, addWordToList, isWordSaved }: Props) {
+export default function WordBottomSheet({ word, onClose, lists, createList, addWordToList, isWordSaved, onPrev, onNext, prevWord, nextWord }: Props) {
   const isOpen = word !== null;
   const [view, setView] = useState<SheetView>("detail");
   const [newListName, setNewListName] = useState("");
   const [savedFeedback, setSavedFeedback] = useState(false);
   const [occurrences, setOccurrences] = useState<number | null>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const prevPeekRef = useRef<HTMLDivElement>(null);
+  const nextPeekRef = useRef<HTMLDivElement>(null);
+  const dragStart = useRef<{ x: number; y: number } | null>(null);
+  const isDragging = useRef(false);
+  const swipeDir = useRef<"left" | "right">("left");
+  const [cardKey, setCardKey] = useState(0);
+  const skipRemount = useRef(false);
+  const hasPrevRef = useRef(!!prevWord);
+  const hasNextRef = useRef(!!nextWord);
+  const [rootOccurrences, setRootOccurrences] = useState<number | null>(null);
 
-  // Reset to detail view when word changes
-  useEffect(() => {
+  useEffect(() => { hasPrevRef.current = !!prevWord; }, [prevWord]);
+  useEffect(() => { hasNextRef.current = !!nextWord; }, [nextWord]);
+
+  // Reset to detail view when word changes — useLayoutEffect runs before paint
+  useLayoutEffect(() => {
     setView("detail");
     setSavedFeedback(false);
     setNewListName("");
-    setOccurrences(null);
+    if (skipRemount.current) {
+      skipRemount.current = false;
+      if (cardRef.current) {
+        cardRef.current.style.transition = "none";
+        cardRef.current.style.transform = "translateX(0)";
+        cardRef.current.style.opacity = "1";
+      }
+      [prevPeekRef, nextPeekRef].forEach((r) => {
+        if (r.current) { r.current.style.transition = "none"; r.current.style.opacity = "0"; }
+      });
+    } else {
+      setCardKey((k) => k + 1);
+    }
     if (word?.lemma) {
       getLemmaCounts().then((counts) => setOccurrences(counts[word.lemma] ?? 0));
+    }
+    if (word?.root) {
+      getRootCounts().then((counts) => setRootOccurrences(counts[word.root] ?? 0));
     }
   }, [word?.id]);
 
@@ -58,6 +100,110 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
     document.body.style.overflow = isOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
+
+  // Drag-to-navigate: card follows finger, flies out on release
+  useEffect(() => {
+    const el = sheetRef.current;
+    if (!el) return;
+
+    const cardWidth = el.offsetWidth || window.innerWidth;
+
+    const hideAllPeeks = (instant = true) => {
+      [prevPeekRef, nextPeekRef].forEach((r) => {
+        if (!r.current) return;
+        if (instant) r.current.style.transition = "none";
+        r.current.style.opacity = "0";
+        r.current.style.transform = "";
+      });
+    };
+
+    const onStart = (e: TouchEvent) => {
+      dragStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      isDragging.current = false;
+      if (cardRef.current) cardRef.current.style.transition = "none";
+      hideAllPeeks(true);
+    };
+
+    const onMove = (e: TouchEvent) => {
+      if (!dragStart.current) return;
+      const dx = e.touches[0].clientX - dragStart.current.x;
+      const dy = e.touches[0].clientY - dragStart.current.y;
+      if (!isDragging.current) {
+        if (Math.abs(dx) < Math.abs(dy)) return;
+        // Block drag at boundaries
+        if (dx < 0 && !hasPrevRef.current) return;
+        if (dx > 0 && !hasNextRef.current) return;
+        isDragging.current = true;
+      }
+      e.preventDefault();
+
+      // Move main card
+      if (cardRef.current) {
+        cardRef.current.style.transform = `translateX(${dx}px)`;
+        cardRef.current.style.opacity = String(Math.max(0.3, 1 - Math.abs(dx) / 300));
+      }
+
+      // Move peek card: opposite side of swipe direction
+      const peekRef = dx < 0 ? prevPeekRef : nextPeekRef;
+      const origin = dx < 0 ? cardWidth : -cardWidth;
+      if (peekRef.current) {
+        peekRef.current.style.transition = "none";
+        peekRef.current.style.transform = `translateX(${origin + dx}px)`;
+        peekRef.current.style.opacity = String(Math.min(1, Math.abs(dx) / 100));
+      }
+    };
+
+    const onEnd = (e: TouchEvent) => {
+      if (!dragStart.current) return;
+      const dx = e.changedTouches[0].clientX - dragStart.current.x;
+      dragStart.current = null;
+      if (!isDragging.current) return;
+      isDragging.current = false;
+
+      const transition = "transform 0.2s ease, opacity 0.2s ease";
+      const peekRef = dx < 0 ? prevPeekRef : nextPeekRef;
+
+      if (Math.abs(dx) >= 80) {
+        // Fly out
+        if (cardRef.current) {
+          cardRef.current.style.transition = transition;
+          cardRef.current.style.transform = `translateX(${dx < 0 ? -cardWidth : cardWidth}px)`;
+          cardRef.current.style.opacity = "0";
+        }
+        // Peek slides to center
+        if (peekRef.current) {
+          peekRef.current.style.transition = transition;
+          peekRef.current.style.transform = "translateX(0)";
+          peekRef.current.style.opacity = "1";
+        }
+        setTimeout(() => {
+          swipeDir.current = dx < 0 ? "left" : "right";
+          skipRemount.current = true;
+          if (dx < 0) onPrev?.(); else onNext?.();
+        }, 200);
+      } else {
+        // Snap back
+        if (cardRef.current) {
+          cardRef.current.style.transition = transition;
+          cardRef.current.style.transform = "translateX(0)";
+          cardRef.current.style.opacity = "1";
+        }
+        if (peekRef.current) {
+          peekRef.current.style.transition = transition;
+          peekRef.current.style.opacity = "0";
+        }
+      }
+    };
+
+    el.addEventListener("touchstart", onStart, { passive: true });
+    el.addEventListener("touchmove", onMove, { passive: false });
+    el.addEventListener("touchend", onEnd, { passive: true });
+    return () => {
+      el.removeEventListener("touchstart", onStart);
+      el.removeEventListener("touchmove", onMove);
+      el.removeEventListener("touchend", onEnd);
+    };
+  }, [onPrev, onNext]);
 
   const handleAddToList = (listId: string) => {
     if (!word) return;
@@ -93,6 +239,7 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
 
       {/* Sheet panel */}
       <div
+        ref={sheetRef}
         className={`fixed bottom-16 left-0 right-0 z-40 bg-white rounded-t-2xl shadow-2xl
           transition-transform duration-300 ease-out max-h-[70vh] overflow-y-auto
           ${isOpen ? "translate-y-0" : "translate-y-full"}`}
@@ -108,50 +255,115 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
             {/* ── DETAIL VIEW ── */}
             {view === "detail" && (
               <>
-                <div className="relative text-center mb-5">
+                <div className="relative mb-1">
                   <button
                     onClick={onClose}
-                    className="absolute right-0 top-0 text-stone-300 hover:text-stone-500 text-2xl leading-none"
+                    className="absolute right-0 top-0 text-stone-300 hover:text-stone-500 text-2xl leading-none z-10"
                   >
                     ×
                   </button>
-                  <p className="font-arabic text-5xl text-stone-800 leading-tight mb-2">
-                    {word.arabic}
-                  </p>
-                  <p className="text-lg font-medium text-stone-700">
-                    {word.translation}
-                  </p>
-                  <p className="text-sm text-stone-400 mt-0.5">
-                    {word.transliteration}
-                  </p>
                 </div>
 
-                <div className="border-t border-stone-100 mb-5" />
+                {/* Card area — relative container for peek + current card */}
+                <div className="relative mb-4 overflow-hidden">
 
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs uppercase tracking-widest text-stone-400">Root</span>
-                    <span className="font-arabic text-xl text-stone-700">{word.root}</span>
+                {/* Prev peek card — always in DOM, hidden via opacity/style */}
+                {prevWord && (
+                  <div ref={prevPeekRef} className="absolute inset-0 bg-stone-50 rounded-2xl px-5 py-5 min-h-[220px]" style={{ opacity: 0 }}>
+                    <div className="text-center mb-4">
+                      <p className="font-arabic text-5xl text-stone-800 leading-tight mb-2">{prevWord.arabic}</p>
+                      <p className="text-lg font-medium text-stone-700">{prevWord.translation}</p>
+                      <p className="text-sm text-stone-400 mt-0.5">{prevWord.transliteration}</p>
+                    </div>
+                    <div className="border-t border-stone-200 mb-4" />
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs uppercase tracking-widest text-stone-400">Root</span>
+                        <span className="font-arabic text-xl text-stone-700">{prevWord.root || "—"}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs uppercase tracking-widest text-stone-400">Lemma</span>
+                        <span className="font-arabic text-xl text-stone-700">{prevWord.lemma || "—"}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs uppercase tracking-widest text-stone-400">Part of Speech</span>
+                        <span className="text-sm text-stone-700 capitalize">{prevWord.pos}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs uppercase tracking-widest text-stone-400">Lemma</span>
-                    <span className="font-arabic text-xl text-stone-700">{word.lemma}</span>
+                )}
+
+                {/* Next peek card */}
+                {nextWord && (
+                  <div ref={nextPeekRef} className="absolute inset-0 bg-stone-50 rounded-2xl px-5 py-5 min-h-[220px]" style={{ opacity: 0 }}>
+                    <div className="text-center mb-4">
+                      <p className="font-arabic text-5xl text-stone-800 leading-tight mb-2">{nextWord.arabic}</p>
+                      <p className="text-lg font-medium text-stone-700">{nextWord.translation}</p>
+                      <p className="text-sm text-stone-400 mt-0.5">{nextWord.transliteration}</p>
+                    </div>
+                    <div className="border-t border-stone-200 mb-4" />
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs uppercase tracking-widest text-stone-400">Root</span>
+                        <span className="font-arabic text-xl text-stone-700">{nextWord.root || "—"}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs uppercase tracking-widest text-stone-400">Lemma</span>
+                        <span className="font-arabic text-xl text-stone-700">{nextWord.lemma || "—"}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs uppercase tracking-widest text-stone-400">Part of Speech</span>
+                        <span className="text-sm text-stone-700 capitalize">{nextWord.pos}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs uppercase tracking-widest text-stone-400">Part of Speech</span>
-                    <span className="text-sm text-stone-600 capitalize">{word.pos}</span>
+                )}
+
+                {/* Swipeable card */}
+                <div
+                  key={cardKey}
+                  ref={cardRef}
+                  className="bg-stone-50 rounded-2xl px-5 py-5 overflow-hidden relative min-h-[220px]"
+                >
+                  <div className="text-center mb-4">
+                    <p className="font-arabic text-5xl text-stone-800 leading-tight mb-2">
+                      {word.arabic}
+                    </p>
+                    <p className="text-lg font-medium text-stone-700">{word.translation}</p>
+                    <p className="text-sm text-stone-400 mt-0.5">{word.transliteration}</p>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs uppercase tracking-widest text-stone-400">Occurrences</span>
-                    <span className="text-sm text-stone-600">
-                      {occurrences === null ? "…" : `${occurrences.toLocaleString()} times in Quran`}
-                    </span>
+
+                  <div className="border-t border-stone-200 mb-4" />
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs uppercase tracking-widest text-stone-400">Root</span>
+                      <div className="flex items-center gap-2">
+                        {word.root && rootOccurrences !== null && (
+                          <span className="text-xs text-stone-400">{rootOccurrences.toLocaleString()} occurrences</span>
+                        )}
+                        <span className="font-arabic text-xl text-stone-700">{word.root || "—"}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs uppercase tracking-widest text-stone-400">Lemma</span>
+                      <div className="flex items-center gap-2">
+                        {word.lemma && occurrences !== null && (
+                          <span className="text-xs text-stone-400">{occurrences.toLocaleString()} occurrences</span>
+                        )}
+                        <span className="font-arabic text-xl text-stone-700">{word.lemma || "—"}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs uppercase tracking-widest text-stone-400">Part of Speech</span>
+                      <span className="text-sm text-stone-700 capitalize">{word.pos}</span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="border-t border-stone-100 mb-5" />
+                </div>{/* end card area */}
 
-                {/* Add to list button */}
+                {/* Add to list button — outside card */}
                 {savedFeedback ? (
                   <div className="w-full py-3 rounded-xl bg-green-50 text-green-700 text-sm font-medium text-center">
                     ✓ Saved to list

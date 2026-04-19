@@ -65,8 +65,23 @@ export default function SurahReader({ surah }: Props) {
     return lemmas;
   }, [lists]);
 
+  const allWords = useMemo(() => surah.ayahs.flatMap((a) => a.words), [surah]);
+  const selectedIdx = selectedWord ? allWords.findIndex((w) => w.id === selectedWord.id) : -1;
+  const verseWords = selectedWord ? (surah.ayahs.find((a) => a.id === selectedWord.ayahId)?.words ?? []) : [];
+  const verseIdx = selectedWord ? verseWords.findIndex((w) => w.id === selectedWord.id) : -1;
+  const prevWord = verseIdx > 0 ? verseWords[verseIdx - 1] : undefined;
+  const nextWord = verseIdx >= 0 && verseIdx < verseWords.length - 1 ? verseWords[verseIdx + 1] : undefined;
+
   const handleWordTap = (word: Word) => {
     setSelectedWord((prev) => (prev?.id === word.id ? null : word));
+  };
+
+  const handlePrevWord = () => {
+    if (prevWord) setSelectedWord(prevWord);
+  };
+
+  const handleNextWord = () => {
+    if (nextWord) setSelectedWord(nextWord);
   };
 
   return (
@@ -107,6 +122,10 @@ export default function SurahReader({ surah }: Props) {
         createList={createList}
         addWordToList={addWordToList}
         isWordSaved={isWordSaved}
+        onPrev={handlePrevWord}
+        onNext={handleNextWord}
+        prevWord={prevWord}
+        nextWord={nextWord}
       />
     </div>
   );

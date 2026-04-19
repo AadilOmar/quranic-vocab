@@ -19,6 +19,17 @@
 .slide-in-right { animation: slide-in-right 0.25s ease; }
 .slide-in-left  { animation: slide-in-left  0.25s ease; }
 
+@keyframes card-slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes card-slide-in-left {
+  from { transform: translateX(-100%); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+.card-slide-in-right { animation: card-slide-in-right 0.25s ease; }
+.card-slide-in-left  { animation: card-slide-in-left  0.25s ease; }
+
 @utility scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
