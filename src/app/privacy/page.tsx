@@ -35,9 +35,9 @@ export default function PrivacyPage() {
         {/* Header */}
         <div className="bg-white rounded-2xl border border-stone-100 px-6 py-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">
+            <a href="/" className="w-9 h-9 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">
               <span className="font-arabic text-white text-lg leading-none">ق</span>
-            </div>
+            </a>
             <span className="text-stone-400 text-sm">Quran Vocabulary</span>
           </div>
           <h1 className="text-2xl font-bold text-stone-900">Privacy Policy</h1>
@@ -68,8 +68,8 @@ export default function PrivacyPage() {
         </div>
         </div>
 
-        <Link href="/" className="block w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl text-center transition-colors">
-          Go to the App
+        <Link href="/login" className="block w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl text-center transition-colors">
+          Start Learning
         </Link>
 
         <div className="text-center">

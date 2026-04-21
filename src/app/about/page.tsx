@@ -7,9 +7,9 @@ export default function AboutPage() {
 
         {/* Logo + Title */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center shrink-0">
+          <a href="/" className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center shrink-0">
             <span className="font-arabic text-white text-xl leading-none">ق</span>
-          </div>
+          </a>
           <div>
             <h1 className="text-xl font-bold text-stone-900 leading-tight">Quran Vocabulary</h1>
             <p className="text-xs text-stone-400">quranvocab.org</p>
@@ -64,8 +64,8 @@ export default function AboutPage() {
         </div>
 
         {/* CTA */}
-        <Link href="/" className="block w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl text-center transition-colors mb-4">
-          Go to the App
+        <Link href="/login" className="block w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl text-center transition-colors mb-4">
+          Start Learning
         </Link>
 
         <div className="text-center">
