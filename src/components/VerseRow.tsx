@@ -10,14 +10,14 @@ type Props = {
   onWordTap: (word: Word) => void;
 };
 
+const toArabicNumeral = (n: number) =>
+  n.toString().replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[parseInt(d)]);
+
 export default function VerseRow({ ayah, selectedWordId, savedLemmas, onWordTap }: Props) {
   return (
-    <div id={`verse-${ayah.id}`} className="py-3 border-b border-stone-200 last:border-0">
+    <div id={`verse-${ayah.id}`} className="relative py-5 border-b border-stone-200 last:border-0">
       <div dir="rtl" className="flex flex-wrap mb-2">
-        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-amber-300 text-amber-700 text-sm font-semibold mx-2 self-center shrink-0">
-          {ayah.id}
-        </span>
-        {ayah.words.map((word) => (
+        {ayah.words.slice(0, -1).map((word) => (
           <ArabicWord
             key={word.id}
             word={word}
@@ -26,6 +26,20 @@ export default function VerseRow({ ayah, selectedWordId, savedLemmas, onWordTap 
             onTap={onWordTap}
           />
         ))}
+        {ayah.words.length > 0 && (
+          <span className="inline-flex items-center">
+            <ArabicWord
+              word={ayah.words[ayah.words.length - 1]}
+              isSelected={selectedWordId === ayah.words[ayah.words.length - 1].id}
+              isSaved={savedLemmas.has(ayah.words[ayah.words.length - 1].lemma)}
+              onTap={onWordTap}
+            />
+            <span className="relative inline-flex items-center justify-center self-center mx-0.5 select-none pointer-events-none shrink-0">
+              <span className="font-arabic text-stone-800 text-base leading-none">۝</span>
+              <span className="absolute font-arabic text-stone-800 text-[10px] leading-none">{toArabicNumeral(ayah.id)}</span>
+            </span>
+          </span>
+        )}
       </div>
 
       <p className="text-sm text-stone-500 leading-relaxed text-left">

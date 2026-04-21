@@ -176,26 +176,24 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
 
         {/* Pinned buttons */}
         {filteredItems.length > 0 && <div className="shrink-0 px-4 pt-3 pb-6 bg-[#FAFAF7] border-t border-stone-100 space-y-2">
-          {flipped && (
-            <div className="flex gap-3">
-              <button
-                onClick={(e) => { e.stopPropagation(); handleStatusChange("learning"); }}
-                className={`flex-1 py-3 rounded-xl border-2 border-stone-200 text-sm font-semibold transition-colors text-stone-900 ${
-                  (pendingStatus ?? liveStatus) === "learning" ? "bg-amber-400" : "bg-transparent hover:bg-stone-50"
-                }`}
-              >
-                Still Learning
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleStatusChange("known"); }}
-                className={`flex-1 py-3 rounded-xl border-2 border-stone-200 text-sm font-semibold transition-colors text-stone-900 ${
-                  (pendingStatus ?? liveStatus) === "known" ? "bg-green-500" : "bg-transparent hover:bg-stone-50"
-                }`}
-              >
-                Know It
-              </button>
-            </div>
-          )}
+          <div className="flex gap-3">
+            <button
+              onClick={(e) => { e.stopPropagation(); handleStatusChange("learning"); }}
+              className={`flex-1 py-3 rounded-xl border-2 border-stone-200 text-sm font-semibold transition-colors text-stone-900 ${
+                (pendingStatus ?? liveStatus) === "learning" ? "bg-amber-400" : "bg-transparent hover:bg-stone-50"
+              }`}
+            >
+              Still Learning
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleStatusChange("known"); }}
+              className={`flex-1 py-3 rounded-xl border-2 border-stone-200 text-sm font-semibold transition-colors text-stone-900 ${
+                (pendingStatus ?? liveStatus) === "known" ? "bg-green-500" : "bg-transparent hover:bg-stone-50"
+              }`}
+            >
+              Know It
+            </button>
+          </div>
           <div className="flex items-center gap-3">
             <button
               onClick={handlePrev}
