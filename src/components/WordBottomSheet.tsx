@@ -39,7 +39,7 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
   const isOpen = word !== null;
   const [view, setView] = useState<SheetView>("detail");
   const [newListName, setNewListName] = useState("");
-  const [savedFeedback, setSavedFeedback] = useState(false);
+  const [savedFeedback, setSavedFeedback] = useState<"saved" | "error" | null>(null);
   const [occurrences, setOccurrences] = useState<number | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -60,7 +60,7 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
   // Reset to detail view when word changes — useLayoutEffect runs before paint
   useLayoutEffect(() => {
     setView("detail");
-    setSavedFeedback(false);
+    setSavedFeedback(null);
     setNewListName("");
     if (skipRemount.current) {
       skipRemount.current = false;
@@ -75,12 +75,14 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
     } else {
       setCardKey((k) => k + 1);
     }
+    let active = true;
     if (word?.lemma) {
-      getLemmaCounts().then((counts) => setOccurrences(counts[word.lemma] ?? 0));
+      getLemmaCounts().then((counts) => { if (active) setOccurrences(counts[word.lemma] ?? 0); });
     }
     if (word?.root) {
-      getRootCounts().then((counts) => setRootOccurrences(counts[word.root] ?? 0));
+      getRootCounts().then((counts) => { if (active) setRootOccurrences(counts[word.root] ?? 0); });
     }
+    return () => { active = false; };
   }, [word?.id]);
 
   // Close on Escape
@@ -205,16 +207,20 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
     };
   }, [onPrev, onNext]);
 
-  const handleAddToList = (listId: string) => {
+  const handleAddToList = async (listId: string) => {
     if (!word) return;
-    addWordToList(listId, {
-      lemma: word.lemma,
-      root: word.root,
-      meaning: word.translation,
-      arabic: word.arabic,
-      sourceWordId: word.id,
-    });
-    setSavedFeedback(true);
+    try {
+      await addWordToList(listId, {
+        lemma: word.lemma,
+        root: word.root,
+        meaning: word.translation,
+        arabic: word.arabic,
+        sourceWordId: word.id,
+      });
+      setSavedFeedback("saved");
+    } catch {
+      setSavedFeedback("error");
+    }
     setView("detail");
   };
 
@@ -365,9 +371,13 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
 
                 {/* Add to list button — outside card */}
                 <div className="mt-auto">
-                {savedFeedback ? (
+                {savedFeedback === "saved" ? (
                   <div className="w-full py-3 rounded-xl bg-green-50 text-green-700 text-sm font-medium text-center">
                     ✓ Saved to list
+                  </div>
+                ) : savedFeedback === "error" ? (
+                  <div className="w-full py-3 rounded-xl bg-red-50 text-red-600 text-sm font-medium text-center">
+                    Failed to save — try again
                   </div>
                 ) : alreadySaved ? (
                   <button

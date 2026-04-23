@@ -55,7 +55,8 @@ export function useSettings() {
       .from("user_settings")
       .select("translation, font")
       .single()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) { setLoading(false); return; }
         const t = data?.translation ?? DEFAULT_TRANSLATION;
         const f = data?.font ?? DEFAULT_FONT;
         setTranslationState(t);
