@@ -54,8 +54,8 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
   const hasNextRef = useRef(!!nextWord);
   const [rootOccurrences, setRootOccurrences] = useState<number | null>(null);
 
-  useEffect(() => { hasPrevRef.current = !!prevWord; }, [prevWord]);
-  useEffect(() => { hasNextRef.current = !!nextWord; }, [nextWord]);
+  hasPrevRef.current = !!prevWord;
+  hasNextRef.current = !!nextWord;
 
   // Reset to detail view when word changes — useLayoutEffect runs before paint
   useLayoutEffect(() => {
@@ -165,7 +165,7 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
       const transition = "transform 0.2s ease, opacity 0.2s ease";
       const peekRef = dx < 0 ? prevPeekRef : nextPeekRef;
 
-      if (Math.abs(dx) >= 80) {
+      if (Math.abs(dx) >= 80 && (dx < 0 ? hasPrevRef.current : hasNextRef.current)) {
         // Fly out
         if (cardRef.current) {
           cardRef.current.style.transition = transition;
