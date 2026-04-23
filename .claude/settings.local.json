@@ -31,7 +31,9 @@
       "Bash(node -e \"const d=JSON.parse\\(require\\(''''fs''''\\).readFileSync\\(0,''''utf8''''\\)\\); const keys=Object.keys\\(d\\); console.log\\(''''keys:'''', keys.slice\\(0,5\\)\\); console.log\\(''''sample:'''', JSON.stringify\\(d[keys[0]]\\)\\)\")",
       "Bash(node scripts/generate-lemma-counts.mjs)",
       "Bash(node -e \"const d=JSON.parse\\(require\\(''fs''\\).readFileSync\\(''public/data/lemma-counts.json'',''utf8''\\)\\); const entries=Object.entries\\(d\\).sort\\(\\(a,b\\)=>b[1]-a[1]\\); console.log\\(''top 5:'', entries.slice\\(0,5\\)\\); console.log\\(''file size:'', require\\(''fs''\\).statSync\\(''public/data/lemma-counts.json''\\).size, ''bytes''\\)\")",
-      "Bash(grep -r \"green\\\\|red\\\\|yellow\\\\|blue\\\\|purple\\\\|pink\" /c/Users/aadilomar/Downloads/aadil/app/src --include=*.tsx --include=*.ts)"
+      "Bash(grep -r \"green\\\\|red\\\\|yellow\\\\|blue\\\\|purple\\\\|pink\" /c/Users/aadilomar/Downloads/aadil/app/src --include=*.tsx --include=*.ts)",
+      "Bash(node:*)",
+      "Bash(del:*)"
     ]
   }
 }

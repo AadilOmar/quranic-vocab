@@ -65,7 +65,7 @@ export default function AboutPage() {
 
         {/* CTA */}
         <Link href="/login" className="block w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl text-center transition-colors mb-4">
-          Start Learning
+          Start Learning - it's free
         </Link>
 
         <div className="text-center">

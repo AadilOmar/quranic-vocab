@@ -69,7 +69,7 @@ export default function PrivacyPage() {
         </div>
 
         <Link href="/login" className="block w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl text-center transition-colors">
-          Start Learning
+          Start Learning - it's free
         </Link>
 
         <div className="text-center">

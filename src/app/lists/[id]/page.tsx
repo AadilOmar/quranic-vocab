@@ -235,17 +235,25 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
           <Link href="/lists" className="text-sm font-medium text-amber-600 z-10">← Lists</Link>
           <span className="absolute inset-0 flex items-center justify-center text-base font-bold text-stone-900 pointer-events-none">{list.name}</span>
         </div>
+        <div className="px-4 pb-3 flex flex-col items-center gap-4">
+          {list.items.length > 0 && (
+            <div className="flex gap-4 text-xs -mt-2">
+              <span className="text-stone-400">{list.items.length} total</span>
+              <span className="text-green-500">{knownCount} known</span>
+              <span className="text-amber-500">{learningCount} learning</span>
+            </div>
+          )}
+          <button
+            onClick={() => startPractice()}
+            disabled={list.items.length === 0}
+            className="w-full py-2.5 bg-amber-500 text-white font-semibold rounded-xl hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm"
+          >
+            Test Yourself
+          </button>
+        </div>
       </div>
 
-      <div className="px-4 pt-6 pb-8">
-      {/* Practice button — always visible */}
-      <button
-        onClick={() => startPractice()}
-        disabled={list.items.length === 0}
-        className="w-full py-3 mb-6 bg-amber-500 text-white font-semibold rounded-xl hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-      >
-        Test Yourself
-      </button>
+      <div className="px-4 pt-4 pb-8">
 
       {list.items.length === 0 ? (
         <div className="text-center py-16">

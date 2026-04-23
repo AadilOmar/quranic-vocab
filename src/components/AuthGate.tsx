@@ -11,7 +11,6 @@ import BottomNav from "@/components/BottomNav";
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, loading, signOut } = useAuth();
-
   useEffect(() => {
     const cached = getFontCookie();
     if (cached) applyFont(cached);
@@ -28,10 +27,19 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
+    if (pathname !== "/") {
+      window.location.replace("/");
+      return null;
+    }
     return (
       <div className="min-h-screen bg-[#FAFAF7]">
+        {/* Top nav */}
+        <div className="flex justify-end px-5 pt-5">
+          <Link href="/login" className="text-sm font-medium text-stone-500 hover:text-stone-800 transition-colors">Sign In</Link>
+        </div>
+
         {/* Hero */}
-        <div className="flex flex-col items-center text-center px-6 pt-16 pb-12">
+        <div className="flex flex-col items-center text-center px-6 pt-4 pb-12">
           <div className="w-14 h-14 rounded-2xl bg-amber-500 flex items-center justify-center mb-4 shadow-md">
             <span className="font-arabic text-white text-3xl leading-none">ق</span>
           </div>
@@ -39,12 +47,6 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
           <p className="text-stone-500 mt-3 max-w-xs leading-relaxed">
             Build a deeper connection with the Quran - one word at a time.
           </p>
-          <Link
-            href="/login"
-            className="mt-6 px-8 py-3 bg-amber-500 text-white font-semibold rounded-xl hover:bg-amber-600 transition-colors shadow-sm"
-          >
-            Start Learning
-          </Link>
         </div>
 
         {/* Features */}
@@ -125,11 +127,17 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="pb-12 flex justify-center gap-4">
-          <Link href="/about" className="text-xs text-stone-400 hover:text-amber-600 transition-colors">About</Link>
-          <Link href="/privacy" className="text-xs text-stone-400 hover:text-amber-600 transition-colors">Privacy Policy</Link>
+        {/* CTA */}
+        <div className="px-5 pb-6 max-w-sm mx-auto">
+          <Link
+            href="/login"
+            className="block w-full text-center py-3 bg-amber-500 text-white font-semibold rounded-xl hover:bg-amber-600 transition-colors shadow-sm"
+          >
+            Start Learning - it's free
+          </Link>
         </div>
+
+        <div className="pb-12" />
       </div>
     );
   }

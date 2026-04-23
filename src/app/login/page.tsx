@@ -72,7 +72,7 @@ export default function LoginPage() {
             {mode === "signin" ? "Welcome back" : "Create your account"}
           </h1>
           <p className="text-sm text-stone-400 mt-1">
-            {mode === "signin" ? "Sign in to continue" : "Free forever, simple signup"}
+            {mode === "signin" ? "Sign in to continue" : "Simple signup, free forever"}
           </p>
         </div>
 

@@ -35,8 +35,8 @@ export default function VerseRow({ ayah, selectedWordId, savedLemmas, onWordTap 
               onTap={onWordTap}
             />
             <span className="relative inline-flex items-center justify-center self-center mx-0.5 select-none pointer-events-none shrink-0">
-              <span className="font-arabic text-stone-800 text-base leading-none">۝</span>
-              <span className="absolute font-arabic text-stone-800 text-[10px] leading-none">{toArabicNumeral(ayah.id)}</span>
+              <span className="font-arabic text-black text-base leading-none">۝</span>
+              <span className="absolute font-arabic text-black text-[10px] leading-none">{toArabicNumeral(ayah.id)}</span>
             </span>
           </span>
         )}
