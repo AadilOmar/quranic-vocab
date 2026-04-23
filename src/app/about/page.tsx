@@ -63,6 +63,17 @@ export default function AboutPage() {
           </div>
         </div>
 
+        {/* Contact */}
+        <div className="bg-amber-50 rounded-2xl border border-amber-100 px-6 py-5 mb-4">
+          <h2 className="text-base font-semibold text-stone-800 mb-2">Contact</h2>
+          <p className="text-stone-500 text-sm">
+            Questions, feedback, or feature requests? Reach us at{" "}
+            <a href="mailto:aadilomar1@gmail.com" className="text-amber-600 hover:underline">
+              aadilomar1@gmail.com
+            </a>
+          </p>
+        </div>
+
         {/* CTA */}
         <Link href="/login" className="block w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl text-center transition-colors mb-4">
           Start Learning - it's free

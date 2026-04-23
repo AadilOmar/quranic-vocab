@@ -137,7 +137,10 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
 
-        <div className="pb-12" />
+        <div className="pb-12 flex justify-center gap-4">
+          <Link href="/about" className="text-xs text-stone-400 hover:text-amber-600 transition-colors">About</Link>
+          <Link href="/privacy" className="text-xs text-stone-400 hover:text-amber-600 transition-colors">Privacy Policy</Link>
+        </div>
       </div>
     );
   }
