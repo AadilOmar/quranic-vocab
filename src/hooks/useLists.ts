@@ -20,6 +20,7 @@ export type SavedList = {
   id: string;
   name: string;
   createdAt: string;
+  isDefault: boolean;
   items: ListItem[];
 };
 
@@ -32,18 +33,19 @@ export function useLists() {
 
     supabase
       .from("lists")
-      .select("id, name, created_at, list_items(id, lemma, root, meaning, arabic, source_word_id, added_at, status)")
+      .select("id, name, created_at, is_default, list_items(id, lemma, root, meaning, arabic, source_word_id, added_at, status)")
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {
         if (error) { setLoading(false); return; }
         type RawItem = { id: string; lemma: string; root: string | null; meaning: string; arabic: string; source_word_id: string; added_at: string; status: string };
-        type RawList = { id: string; name: string; created_at: string; list_items: RawItem[] };
+        type RawList = { id: string; name: string; created_at: string; is_default: boolean; list_items: RawItem[] };
         const rows = (data ?? []) as RawList[];
         setLists(
           rows.map((l) => ({
             id: l.id,
             name: l.name,
             createdAt: l.created_at,
+            isDefault: l.is_default ?? false,
             items: (l.list_items ?? [])
               .map((i) => ({
                 id: i.id,
@@ -75,6 +77,7 @@ export function useLists() {
       id: data.id,
       name: data.name,
       createdAt: data.created_at,
+      isDefault: false,
       items: [],
     };
     setLists((prev) => [...prev, newList]);
@@ -153,9 +156,28 @@ export function useLists() {
   const isWordSaved = (lemma: string): boolean =>
     lists.some((l) => l.items.some((i) => i.lemma === lemma));
 
+  const defaultListId = lists.find((l) => l.isDefault)?.id ?? null;
+
+  const setDefaultList = async (listId: string | null) => {
+    const supabase = getSupabase();
+    // Clear existing default
+    const currentDefault = lists.find((l) => l.isDefault);
+    if (currentDefault) {
+      await supabase.from("lists").update({ is_default: false }).eq("id", currentDefault.id);
+    }
+    if (listId) {
+      await supabase.from("lists").update({ is_default: true }).eq("id", listId);
+    }
+    setLists((prev) =>
+      prev.map((l) => ({ ...l, isDefault: l.id === listId }))
+    );
+  };
+
   return {
     lists,
     loading,
+    defaultListId,
+    setDefaultList,
     createList,
     addWordToList,
     updateWordStatus,

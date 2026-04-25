@@ -12,7 +12,7 @@ type Props = { surah: Surah };
 
 export default function SurahReader({ surah }: Props) {
   const [selectedWord, setSelectedWord] = useState<Word | null>(null);
-  const { lists, createList, addWordToList, isWordSaved } = useLists();
+  const { lists, createList, addWordToList, isWordSaved, defaultListId, setDefaultList } = useLists();
   const { saveProgress } = useReadingHistory();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -122,6 +122,7 @@ export default function SurahReader({ surah }: Props) {
         createList={createList}
         addWordToList={addWordToList}
         isWordSaved={isWordSaved}
+        defaultListId={defaultListId}
         onPrev={handlePrevWord}
         onNext={handleNextWord}
         prevWord={prevWord}

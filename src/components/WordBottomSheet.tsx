@@ -27,6 +27,7 @@ type Props = {
   createList: (name: string) => Promise<SavedList>;
   addWordToList: (listId: string, item: Omit<ListItem, "id" | "addedAt" | "status">) => void;
   isWordSaved: (lemma: string) => boolean;
+  defaultListId: string | null;
   onPrev?: () => void;
   onNext?: () => void;
   prevWord?: Word;
@@ -35,7 +36,7 @@ type Props = {
 
 type SheetView = "detail" | "pick-list" | "new-list";
 
-export default function WordBottomSheet({ word, onClose, lists, createList, addWordToList, isWordSaved, onPrev, onNext, prevWord, nextWord }: Props) {
+export default function WordBottomSheet({ word, onClose, lists, createList, addWordToList, isWordSaved, defaultListId, onPrev, onNext, prevWord, nextWord }: Props) {
   const isOpen = word !== null;
   const [view, setView] = useState<SheetView>("detail");
   const [newListName, setNewListName] = useState("");
@@ -232,6 +233,7 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
   };
 
   const alreadySaved = word ? isWordSaved(word.lemma) : false;
+  const defaultList = defaultListId ? lists.find((l) => l.id === defaultListId) : null;
 
   return (
     <>
@@ -386,6 +388,21 @@ export default function WordBottomSheet({ word, onClose, lists, createList, addW
                   >
                     Saved — add to another list
                   </button>
+                ) : defaultList ? (
+                  <div className="flex flex-col gap-1.5">
+                    <button
+                      onClick={() => handleAddToList(defaultList.id)}
+                      className="w-full py-3 rounded-xl bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 transition-colors"
+                    >
+                      Add to default list &ldquo;{defaultList.name}&rdquo;
+                    </button>
+                    <button
+                      onClick={() => setView("pick-list")}
+                      className="w-full py-2 text-xs text-stone-400 hover:text-stone-600 transition-colors"
+                    >
+                      Pick a different list
+                    </button>
+                  </div>
                 ) : (
                   <button
                     onClick={() => setView("pick-list")}

@@ -1,14 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useLists } from "@/hooks/useLists";
 
 export default function ListsPage() {
-  const { lists, loading, deleteList, createList } = useLists();
+  const { lists, loading, deleteList, createList, defaultListId, setDefaultList } = useLists();
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [showNewList, setShowNewList] = useState(false);
   const [newListName, setNewListName] = useState("");
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [openMenuId]);
 
   const confirmList = lists.find((l) => l.id === confirmId);
 
@@ -57,7 +70,12 @@ export default function ListsPage() {
                 className="flex-1 flex items-center justify-between"
               >
                 <div>
-                  <p className="font-medium text-stone-800">{list.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-stone-800">{list.name}</p>
+                    {list.id === defaultListId && (
+                      <span className="text-xs px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-700 font-medium">Default</span>
+                    )}
+                  </div>
                   <p className="text-xs text-stone-400 mt-0.5">
                     {list.items.length} {list.items.length === 1 ? "word" : "words"}
                     {list.items.some((i) => i.status === "known") && (
@@ -73,12 +91,32 @@ export default function ListsPage() {
                   </p>
                 </div>
               </Link>
-              <button
-                onClick={() => setConfirmId(list.id)}
-                className="text-stone-300 hover:text-red-400 transition-colors text-sm px-2"
-              >
-                ✕
-              </button>
+
+              <div className="relative" ref={openMenuId === list.id ? menuRef : null}>
+                <button
+                  onClick={() => setOpenMenuId(openMenuId === list.id ? null : list.id)}
+                  className="text-stone-300 hover:text-stone-500 transition-colors px-2 py-1 text-lg leading-none"
+                >
+                  ···
+                </button>
+                {openMenuId === list.id && (
+                  <div className="absolute right-0 top-8 z-20 w-44 bg-white rounded-xl shadow-lg border border-stone-100 overflow-hidden">
+                    <button
+                      onClick={() => { setDefaultList(list.id === defaultListId ? null : list.id); setOpenMenuId(null); }}
+                      className="w-full text-left px-4 py-3 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
+                    >
+                      {list.id === defaultListId ? "Remove default" : "Set as default"}
+                    </button>
+                    <div className="h-px bg-stone-100" />
+                    <button
+                      onClick={() => { setConfirmId(list.id); setOpenMenuId(null); }}
+                      className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
