@@ -95,7 +95,7 @@ export default function ListsPage() {
               <div className="relative" ref={openMenuId === list.id ? menuRef : null}>
                 <button
                   onClick={() => setOpenMenuId(openMenuId === list.id ? null : list.id)}
-                  className="text-stone-300 hover:text-stone-500 transition-colors px-2 py-1 text-lg leading-none"
+                  className="text-stone-500 hover:text-stone-700 transition-colors px-2 py-1 text-lg leading-none"
                 >
                   ···
                 </button>
