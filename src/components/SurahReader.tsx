@@ -26,7 +26,12 @@ export default function SurahReader({ surah }: Props) {
       .then(({ data }) => {
         if (data?.last_verse && data.last_verse > 1) {
           setTimeout(() => {
-            document.getElementById(`verse-${data.last_verse}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+            const el = document.getElementById(`verse-${data.last_verse}`);
+            if (el) {
+              const headerHeight = 64;
+              const top = el.getBoundingClientRect().top + window.scrollY - headerHeight;
+              window.scrollTo({ top, behavior: "smooth" });
+            }
           }, 300);
         }
       });
